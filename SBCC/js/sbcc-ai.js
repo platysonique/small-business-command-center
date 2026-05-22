@@ -3,7 +3,6 @@
  * Requires: command-center globals (loadProfile, PROFILE_FIELDS, TASKS, etc.)
  */
 (function () {
-  const STORAGE_KEY = 'sbcc_ai_settings';
   const DEFAULT_BACKEND = 'http://localhost:3921';
 
   function detectStorageNs() {
@@ -16,6 +15,7 @@
 
   const STORE_NS = detectStorageNs();
   function storeKey(suffix) { return `${STORE_NS}_${suffix}`; }
+  function settingsKey() { return storeKey('ai_settings'); }
 
   const DEFAULT_SETTINGS = {
     backendUrl: DEFAULT_BACKEND,
@@ -35,7 +35,7 @@
 
   function loadSettings() {
     try {
-      const raw = localStorage.getItem(STORAGE_KEY);
+      const raw = localStorage.getItem(settingsKey());
       if (!raw) return { ...DEFAULT_SETTINGS, providers: { ...DEFAULT_SETTINGS.providers } };
       const s = JSON.parse(raw);
       return {
@@ -50,7 +50,7 @@
 
   function saveSettings(s) {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(s));
+      localStorage.setItem(settingsKey(), JSON.stringify(s));
     } catch (e) {
       console.warn('SBCC AI settings save failed', e);
     }

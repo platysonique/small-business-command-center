@@ -3,17 +3,26 @@
 import sys
 from pathlib import Path
 
+
 def inject(path: Path, js_prefix: str):
     text = path.read_text(encoding="utf-8")
     if "sbcc-ai.js" in text:
         print("already injected", path)
         return
 
-    text = text.replace(
-        "</style>\n</head>",
-        f'</style>\n<link rel="stylesheet" href="{js_prefix}sbcc-ai.css">\n</head>',
-        1,
-    )
+    if "sbcc-ai.css" not in text:
+        if "sbcc-void-search.css" in text:
+            text = text.replace(
+                '<link rel="stylesheet" href="' + js_prefix + 'sbcc-void-search.css">',
+                f'<link rel="stylesheet" href="{js_prefix}sbcc-void-search.css">\n<link rel="stylesheet" href="{js_prefix}sbcc-ai.css">',
+                1,
+            )
+        else:
+            text = text.replace(
+                "</style>\n</head>",
+                f'</style>\n<link rel="stylesheet" href="{js_prefix}sbcc-ai.css">\n</head>',
+                1,
+            )
 
     nav_anchor = """    <button class="nav-item" onclick="switchView('milestones')">"""
     nav_insert = nav_anchor + """
@@ -26,7 +35,6 @@ def inject(path: Path, js_prefix: str):
       <span>AI Settings</span>
     </button>
   </nav>"""
-    # Only if not already has ai-settings
     if "ai-settings" not in text:
         text = text.replace(
             nav_anchor + """
@@ -52,8 +60,8 @@ def inject(path: Path, js_prefix: str):
 </main>"""
     if 'id="view-ai-settings"' not in text:
         text = text.replace(
-            "    <div class=\"timeline\" id=\"milestones-timeline\"></div>\n  </div>\n\n</main>",
-            "    <div class=\"timeline\" id=\"milestones-timeline\"></div>\n  </div>" + ai_view,
+            '    <div class="timeline" id="milestones-timeline"></div>\n  </div>\n\n</main>',
+            '    <div class="timeline" id="milestones-timeline"></div>\n  </div>' + ai_view,
             1,
         )
 
@@ -63,11 +71,18 @@ def inject(path: Path, js_prefix: str):
         1,
     )
 
-    text = text.replace(
-        "</script>\n</body>",
-        f'</script>\n<script src="{js_prefix}sbcc-ai.js"></script>\n</body>',
-        1,
-    )
+    if "sbcc-void-search.js" in text:
+        text = text.replace(
+            f'<script src="{js_prefix}sbcc-void-search.js"></script>',
+            f'<script src="{js_prefix}sbcc-void-search.js"></script>\n<script src="{js_prefix}sbcc-ai.js"></script>',
+            1,
+        )
+    else:
+        text = text.replace(
+            "</script>\n</body>",
+            f'</script>\n<script src="{js_prefix}sbcc-ai.js"></script>\n</body>',
+            1,
+        )
 
     path.write_text(text, encoding="utf-8")
     print("injected", path)
@@ -75,5 +90,7 @@ def inject(path: Path, js_prefix: str):
 
 if __name__ == "__main__":
     root = Path(__file__).resolve().parents[1]
-    inject(root / "Pombomb Media" / "pombomb-dashboard.html", "../SBCC/js/")
+    target = Path(sys.argv[1]) if len(sys.argv) > 1 else root / "Pombomb Media" / "pombomb-dashboard.html"
+    prefix = sys.argv[2] if len(sys.argv) > 2 else "../SBCC/js/"
+    inject(target, prefix)
     print("done")

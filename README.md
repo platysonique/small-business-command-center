@@ -12,6 +12,18 @@ A local dev server (e.g. `python3 -m http.server`) is **optional** — useful fo
 
 **Repository:** [https://github.com/platysonique/small-business-command-center](https://github.com/platysonique/small-business-command-center)
 
+## Disclaimer — use at your own risk
+
+**This software is provided as-is. Use is entirely at your discretion.**
+
+- SBCC stores business data (EIN, phone, address, grant details, etc.) in **your browser’s localStorage**. Nothing is encrypted by default.
+- **Hosting this dashboard online is not recommended** unless you understand the risks and have taken steps to protect access (private hosting, authentication in front of the site, device encryption, etc.).
+- **You are responsible for your own data protection** — what you enter, where you host it, who can access your devices, and whether you enable the optional AI assistant.
+- The authors and contributors **do not** guarantee security, compliance (HIPAA, PCI, etc.), or suitability for any regulated use case.
+- The optional AI backend sends configured API requests to third-party providers; sensitive fields are redacted unless you explicitly enable **FULL ACCESS** in AI Settings.
+
+If in doubt, run the dashboard **locally on your own machine** (open the HTML file or a private local server) and do not publish a copy containing real business data.
+
 ## Quick start (zero install)
 
 **Option A — open the file**
@@ -34,6 +46,7 @@ Works fully offline after the first load (fonts load from Google Fonts when onli
 | `SBCC/command-center.html` | **Blank template** — desktop layout, empty data, `sbcc_*` localStorage |
 | `SBCC/mobile/command-center.html` | **Blank mobile** — bottom nav, same features |
 | `SBCC/js/sbcc-ai.js` + `sbcc-ai.css` | Draggable AI chat bubble + settings UI |
+| `SBCC/js/sbcc-void-search.js` + `sbcc-void-search.css` | Void audit trail + global search |
 | `server/` | **Optional AI backend** — Perplexity search, OpenAI/Anthropic agents, form-fill tools |
 | `scripts/` | Generators to rebuild blank/mobile from a filled dashboard |
 
@@ -140,6 +153,7 @@ Requires Python 3 only — still no app server.
 - Data is stored in **your browser’s localStorage** (`sbcc_profile`, `sbcc_done`, `sbcc_custom_*`, etc.).
 - Nothing is sent to a server unless you enable the **AI assistant** and configure a backend + API keys.
 - **Copy All to Clipboard** uses real values even when sensitive fields are visually blinded.
+- See **Disclaimer** above — online hosting of copies with real data is not recommended unless you protect access yourself.
 
 ## License
 
