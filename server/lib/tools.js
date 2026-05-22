@@ -114,8 +114,8 @@ export function buildSystemPrompt({ intent, fullAccess, hasResearchAssistant, re
   const researchRule = hasResearchAssistant
     ? researchSource === 'perplexity'
       ? 'For external facts you MUST call web_research (Perplexity research assistant). Do NOT answer from internal knowledge alone.'
-      : 'For external facts you MUST call web_research (server stealth fetch — no visible browser tab). Do NOT answer from internal knowledge alone.'
-    : 'Research assistant is NOT available. For external research, tell the user to add a Perplexity API key or enable stealth fallback in AI Settings. You may only synthesize from command center data provided.';
+      : 'For external facts you MUST call web_research (background research layer — hidden iframe under the dashboard; user is not interrupted). Do NOT answer from internal knowledge alone.'
+    : 'Research assistant is NOT available. For external research, enable the background layer or add a Perplexity API key in AI Settings. You may only synthesize from command center data provided.';
 
   return `You are the SBCC AI Assistant for a small business grant & operations command center.
 

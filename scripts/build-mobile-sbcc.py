@@ -128,12 +128,20 @@ text = text.replace(
     '<link rel="stylesheet" href="../js/sbcc-void-search.css">',
 )
 text = text.replace(
+    '<link rel="stylesheet" href="js/sbcc-research-layer.css">',
+    '<link rel="stylesheet" href="../js/sbcc-research-layer.css">',
+)
+text = text.replace(
     '<script src="js/sbcc-ai.js"></script>',
     '<script src="../js/sbcc-ai.js"></script>',
 )
 text = text.replace(
     '<script src="js/sbcc-void-search.js"></script>',
     '<script src="../js/sbcc-void-search.js"></script>',
+)
+text = text.replace(
+    '<script src="js/sbcc-research-layer.js"></script>',
+    '<script src="../js/sbcc-research-layer.js"></script>',
 )
 
 MOBILE.write_text(text, encoding="utf-8")

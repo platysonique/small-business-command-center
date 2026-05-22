@@ -36,9 +36,17 @@ function extractToolCalls(message) {
   }));
 }
 
-async function executeToolCall(name, args, keys, settings) {
+async function executeToolCall(name, args, keys, settings, prefetchedResearch) {
   if (name === 'web_research' || name === 'perplexity_search') {
     const query = args.query || args.q || '';
+    if (prefetchedResearch?.content) {
+      return {
+        type: 'search_result',
+        content: prefetchedResearch.content,
+        citations: prefetchedResearch.citations || [],
+        source: prefetchedResearch.source || 'layer',
+      };
+    }
     const result = await runWebResearch(query, keys, settings);
     return {
       type: 'search_result',
@@ -57,7 +65,7 @@ async function synthesizeSearchAnswer(message, research, keys, agentProvider, sa
   if (!agentKey) {
     return {
       reply: research.content,
-      mode: research.source === 'stealth' ? 'stealth-research' : 'perplexity',
+      mode: research.source === 'layer' ? 'layer' : research.source === 'stealth' ? 'stealth-research' : 'perplexity',
       citations: research.citations || [],
     };
   }
@@ -94,17 +102,47 @@ async function synthesizeSearchAnswer(message, research, keys, agentProvider, sa
   };
 }
 
-export async function runAgent({ message, history = [], context = {}, settings = {} }) {
+export async function runAgent({ message, history = [], context = {}, settings = {}, prefetchedResearch = null }) {
   const fullAccess = !!settings.fullAccess;
   const keys = resolveProviderKeys(settings);
   const intent = classifyIntent(message);
   const safeContext = redactContext(context, fullAccess, settings.sensitiveKeys || []);
   const agentProvider = normalizeAgentProvider(settings);
   const agentKey = keys[agentProvider];
-  const hasResearchAssistant = !!keys.perplexity || settings.researchAssistant?.fallbackStealth !== false;
+  const layerFallback = settings.researchAssistant?.fallbackLayer !== false;
+  const hasResearchAssistant = !!keys.perplexity || layerFallback || !!prefetchedResearch;
 
   // ─── Search intent: research assistant first, agent synthesizes ───
   if (intent === 'search') {
+    if (prefetchedResearch?.content) {
+      try {
+        const synthesized = await synthesizeSearchAnswer(
+          message,
+          prefetchedResearch,
+          keys,
+          agentProvider,
+          safeContext,
+          history,
+        );
+        return {
+          reply: synthesized.reply,
+          mode: synthesized.mode,
+          intent,
+          actions: [],
+          citations: synthesized.citations,
+          researchSource: prefetchedResearch.source || 'layer',
+        };
+      } catch (err) {
+        return {
+          reply: `Research synthesis failed: ${err.message}`,
+          mode: 'search_error',
+          intent,
+          actions: [],
+          citations: [],
+        };
+      }
+    }
+
     if (!hasResearchAssistant) {
       return {
         reply: 'Web research is unavailable. Add a Perplexity API key under Research Assistant, or enable stealth fallback in AI Settings.',
@@ -134,8 +172,19 @@ export async function runAgent({ message, history = [], context = {}, settings =
         researchSource: synthesized.researchSource || research.source,
       };
     } catch (err) {
+      if (err.message === 'LAYER_RESEARCH_REQUIRED') {
+        return {
+          reply: '',
+          needsLayerResearch: true,
+          query: message,
+          mode: 'layer-pending',
+          intent,
+          actions: [],
+          citations: [],
+        };
+      }
       return {
-        reply: `Research failed: ${err.message}. Check your Perplexity key or try again.`,
+        reply: `Research failed: ${err.message}. Check AI Settings — backend must be running for the background research layer.`,
         mode: 'search_error',
         intent,
         actions: [],
@@ -159,7 +208,7 @@ export async function runAgent({ message, history = [], context = {}, settings =
     intent,
     fullAccess,
     hasResearchAssistant,
-    researchSource: keys.perplexity ? 'perplexity' : 'stealth',
+    researchSource: keys.perplexity ? 'perplexity' : 'layer',
   });
   const ctxBlock = JSON.stringify(safeContext, null, 2).slice(0, 14000);
   const messages = [
@@ -218,7 +267,7 @@ export async function runAgent({ message, history = [], context = {}, settings =
       }
 
       try {
-        const result = await executeToolCall(tc.name, tc.args, keys, settings);
+        const result = await executeToolCall(tc.name, tc.args, keys, settings, prefetchedResearch);
 
         if (result.type === 'search_result') {
           lastResearchSource = result.source;

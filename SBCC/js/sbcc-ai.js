@@ -21,7 +21,8 @@
     backendUrl: DEFAULT_BACKEND,
     activeProvider: 'openai',
     researchAssistant: {
-      fallbackStealth: true,
+      fallbackLayer: true,
+      peekLayer: false,
     },
     fullAccess: false,
     chatPos: { x: null, y: null },
@@ -186,9 +187,45 @@
     return applied;
   }
 
+  function looksLikeSearch(text) {
+    const t = String(text || '').trim();
+    if (!t) return false;
+    return (
+      /\b(search|find|look up|lookup|research|latest|current|deadline|grant program|funding|eligible|requirements|what grants|how to apply)\b/i.test(t)
+      || (/\b(grant|funding|loan|sba)\b/i.test(t) && t.length > 30)
+      || /\?$/.test(t)
+    );
+  }
+
+  async function maybeLayerPrefetch(message, settings) {
+    const hasPerplexity = !!settings.providers?.perplexity?.apiKey;
+    const layerOn = settings.researchAssistant?.fallbackLayer !== false;
+    if (hasPerplexity || !layerOn || !window.SBCC_LAYER) return null;
+    if (!looksLikeSearch(message)) return null;
+
+    const backendUrl = (settings.backendUrl || DEFAULT_BACKEND).replace(/\/$/, '');
+    try {
+      const health = await fetch(backendUrl + '/api/health', { signal: AbortSignal.timeout(4000) });
+      if (!health.ok) return null;
+    } catch {
+      return null;
+    }
+
+    if (settings.researchAssistant?.peekLayer) window.SBCC_LAYER.setPeek(true);
+
+    return window.SBCC_LAYER.research(message, {
+      backendUrl,
+      peek: settings.researchAssistant?.peekLayer,
+      maxPages: 2,
+    });
+  }
+
   function normalizeSettings(s) {
     if (!['openai', 'anthropic'].includes(s.activeProvider)) {
       s.activeProvider = 'openai';
+    }
+    if (s.researchAssistant?.fallbackStealth !== undefined && s.researchAssistant.fallbackLayer === undefined) {
+      s.researchAssistant.fallbackLayer = s.researchAssistant.fallbackStealth;
     }
     return s;
   }
@@ -229,9 +266,13 @@
         <input type="password" id="ai-key-perplexity" value="${esc(s.providers.perplexity?.apiKey || '')}" placeholder="pplx-…" autocomplete="off" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:var(--r);background:var(--offset);font:inherit;margin-bottom:8px">
         <label style="font-size:.68rem;color:var(--muted);display:block;margin-bottom:4px">Perplexity model</label>
         <input type="text" id="ai-model-perplexity" value="${esc(s.providers.perplexity?.model || 'sonar-pro')}" placeholder="sonar-pro" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:var(--r);background:var(--offset);font:inherit;margin-bottom:12px">
+        <label style="display:flex;align-items:flex-start;gap:8px;font-size:.78rem;line-height:1.45;cursor:pointer;margin-bottom:8px">
+          <input type="checkbox" id="ai-layer-fallback" ${s.researchAssistant?.fallbackLayer !== false ? 'checked' : ''} style="margin-top:3px">
+          <span><strong>Background research layer</strong> — hidden iframe <em>under</em> this page. AI reads pages and clicks links there only. You keep working on the command center above; nothing steals focus.</span>
+        </label>
         <label style="display:flex;align-items:flex-start;gap:8px;font-size:.78rem;line-height:1.45;cursor:pointer">
-          <input type="checkbox" id="ai-stealth-fallback" ${s.researchAssistant?.fallbackStealth !== false ? 'checked' : ''} style="margin-top:3px">
-          <span><strong>Stealth web research</strong> — if no Perplexity key, the server searches the web invisibly (no browser tab) via DuckDuckGo + page fetch, then your agent synthesizes the answer.</span>
+          <input type="checkbox" id="ai-layer-peek" ${s.researchAssistant?.peekLayer ? 'checked' : ''} style="margin-top:3px">
+          <span><strong>Peek at layer</strong> (debug) — faintly show what the AI is browsing. Off by default.</span>
         </label>
       </div>
 
@@ -285,7 +326,8 @@
     s.activeProvider = document.getElementById('ai-active-provider')?.value || 'openai';
     if (!['openai', 'anthropic'].includes(s.activeProvider)) s.activeProvider = 'openai';
     s.researchAssistant = {
-      fallbackStealth: !!document.getElementById('ai-stealth-fallback')?.checked,
+      fallbackLayer: !!document.getElementById('ai-layer-fallback')?.checked,
+      peekLayer: !!document.getElementById('ai-layer-peek')?.checked,
     };
     ['perplexity', 'openai', 'anthropic', 'google'].forEach((id) => {
       s.providers[id] = s.providers[id] || {};
@@ -495,6 +537,34 @@
     }
   }
 
+  async function postChat(text, s, prefetchedResearch = null) {
+    const url = (s.backendUrl || DEFAULT_BACKEND).replace(/\/$/, '') + '/api/chat';
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        message: text,
+        history: chatState.history.filter((m) => m.role === 'user' || m.role === 'assistant').slice(-12).map((m) => ({
+          role: m.role,
+          content: m.content,
+        })),
+        context: exportContext(s.fullAccess),
+        prefetchedResearch,
+        settings: {
+          fullAccess: s.fullAccess,
+          activeProvider: s.activeProvider,
+          researchAssistant: s.researchAssistant,
+          providers: s.providers,
+          sensitiveKeys: getSensitiveKeys(),
+        },
+      }),
+      signal: AbortSignal.timeout(120000),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Request failed');
+    return data;
+  }
+
   async function sendMessage() {
     if (chatState.sending) return;
     const input = document.getElementById('sbcc-ai-input');
@@ -502,7 +572,7 @@
     const text = input?.value?.trim();
     if (!text) return;
 
-    const s = loadSettings();
+    const s = normalizeSettings(loadSettings());
     chatState.history.push({ role: 'user', content: text });
     input.value = '';
     renderChatMessages();
@@ -512,30 +582,19 @@
     status.textContent = 'Thinking…';
 
     try {
-      const url = (s.backendUrl || DEFAULT_BACKEND).replace(/\/$/, '') + '/api/chat';
-      const res = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          message: text,
-          history: chatState.history.filter((m) => m.role === 'user' || m.role === 'assistant').slice(-12).map((m) => ({
-            role: m.role,
-            content: m.content,
-          })),
-          context: exportContext(s.fullAccess),
-          settings: {
-            fullAccess: s.fullAccess,
-            activeProvider: s.activeProvider,
-            researchAssistant: s.researchAssistant,
-            providers: s.providers,
-            sensitiveKeys: getSensitiveKeys(),
-          },
-        }),
-        signal: AbortSignal.timeout(120000),
-      });
+      let prefetchedResearch = await maybeLayerPrefetch(text, s);
+      if (prefetchedResearch) status.textContent = 'Reading pages in background layer…';
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Request failed');
+      let data = await postChat(text, s, prefetchedResearch);
+
+      if (data.needsLayerResearch && window.SBCC_LAYER) {
+        status.textContent = 'Research layer browsing…';
+        prefetchedResearch = await window.SBCC_LAYER.research(data.query || text, {
+          backendUrl: (s.backendUrl || DEFAULT_BACKEND).replace(/\/$/, ''),
+          peek: s.researchAssistant?.peekLayer,
+        });
+        data = await postChat(text, s, prefetchedResearch);
+      }
 
       let reply = data.reply || '';
       if (data.actions?.length) {
@@ -555,13 +614,14 @@
       saveSettings(s);
       const modeLabel = {
         perplexity: 'Research assistant (Perplexity)',
-        'stealth-research': 'Stealth web research',
+        layer: 'Background research layer',
+        'stealth-research': 'Server research',
         openai: 'OpenAI agent',
         anthropic: 'Anthropic agent',
       };
       status.textContent = modeLabel[data.mode]
-        || (data.researchSource === 'stealth'
-          ? 'Answered via stealth research'
+        || (data.researchSource === 'layer'
+          ? 'Answered via background layer'
           : data.researchSource === 'perplexity'
             ? 'Answered via Perplexity'
             : 'Ready');

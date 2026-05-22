@@ -1,0 +1,35 @@
+/* Background research sublayer — sits under the command center, invisible to the user */
+
+#sbcc-research-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none !important;
+  visibility: hidden;
+  opacity: 0;
+  overflow: hidden;
+  contain: strict;
+}
+
+#sbcc-research-layer.peek {
+  visibility: visible;
+  opacity: 0.35;
+  z-index: 5;
+  pointer-events: none !important;
+}
+
+#sbcc-research-layer iframe {
+  width: 1280px;
+  height: 900px;
+  border: 0;
+  pointer-events: none !important;
+  background: #fff;
+}
+
+body.sbcc-has-research-layer > .sidebar,
+body.sbcc-has-research-layer > .main,
+body.sbcc-has-research-layer > .mobile-bottom-nav,
+body.sbcc-has-research-layer > .mobile-more-sheet {
+  position: relative;
+  z-index: 2;
+}

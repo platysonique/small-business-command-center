@@ -67,7 +67,7 @@ Floating **draggable chat bubble** on every dashboard page:
 | Question type | Behavior |
 |---------------|----------|
 | **Your data** (“summarize my tasks”, “what’s in my profile?”) | Agent provider synthesizes from command center context |
-| **Search / research** (grants, deadlines, external facts) | **Research assistant** — Perplexity when keyed; otherwise **stealth server fetch** (DuckDuckGo + page read, no visible browser tab) |
+| **Search / research** (grants, deadlines, external facts) | **Research assistant** — Perplexity when keyed; otherwise a **background layer** (hidden iframe under the page — AI reads/clicks there; you keep working on top) |
 | **Form fill** (“fill my industry field”, “add this grant”) | Agent provider tools update profile, tasks, grants, narratives |
 
 **Architecture:** One **agent provider** (OpenAI or Anthropic) handles chat and tools. **Perplexity is not an agent** — it is the research assistant for web search only.
@@ -89,7 +89,8 @@ npm start              # http://localhost:3921
 Then open the dashboard, go to **AI Settings**, set backend URL (bottom of page), pick **one agent provider**, add:
 
 - **OpenAI or Anthropic key** (required — runs the agent)
-- **Perplexity API key** (recommended for research — optional if stealth fallback is on)
+- **Perplexity API key** (recommended for research — optional if background layer is on)
+- **Backend running** (`npm start` in `server/`) — required for the research layer proxy
 
 Deploy `server/` to any Node host (Railway, Render, Fly.io, VPS) and point AI Settings at your deployed URL.
 

@@ -1,5 +1,6 @@
 import http from 'http';
 import { runAgent } from './lib/agent.js';
+import { fetchProxiedPage, validateResearchUrl } from './lib/research-proxy.js';
 
 const PORT = Number(process.env.PORT || 3921);
 const CORS = process.env.SBCC_CORS_ORIGIN || '*';
@@ -40,15 +41,39 @@ const server = http.createServer(async (req, res) => {
       service: 'sbcc-ai-server',
       version: '1.1.0',
       agentProviders: ['openai', 'anthropic'],
-      researchAssistant: ['perplexity', 'stealth-fallback'],
+      researchAssistant: ['perplexity', 'background-layer'],
     });
+    return;
+  }
+
+  if (req.method === 'GET' && url.pathname === '/api/research/proxy') {
+    try {
+      const target = url.searchParams.get('url');
+      if (!target) {
+        sendJson(res, 400, { error: 'url query param required' });
+        return;
+      }
+      validateResearchUrl(target);
+      const proxyBase = `${url.origin}/api/research/proxy`;
+      const page = await fetchProxiedPage(target, proxyBase);
+      res.writeHead(200, {
+        'Content-Type': 'text/html; charset=utf-8',
+        'X-SBCC-Research-Layer': '1',
+        ...corsHeaders(),
+      });
+      res.end(page.html);
+    } catch (err) {
+      console.error('[sbcc-research-proxy]', err.message);
+      res.writeHead(502, { 'Content-Type': 'text/plain', ...corsHeaders() });
+      res.end(`Research proxy error: ${err.message}`);
+    }
     return;
   }
 
   if (req.method === 'POST' && url.pathname === '/api/chat') {
     try {
       const body = await readBody(req);
-      const { message, history, context, settings } = body;
+      const { message, history, context, settings, prefetchedResearch } = body;
       if (!message || !String(message).trim()) {
         sendJson(res, 400, { error: 'message required' });
         return;
@@ -59,6 +84,7 @@ const server = http.createServer(async (req, res) => {
         history: Array.isArray(history) ? history : [],
         context: context || {},
         settings: settings || {},
+        prefetchedResearch: prefetchedResearch || null,
       });
 
       sendJson(res, 200, result);
