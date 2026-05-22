@@ -1,73 +1,41 @@
-# Deploy SMCC to your personal web hosting
+# Upload SMCC to your web host
 
-One folder. One secret URL. Dashboard + AI + background research layer — **same origin**, no second server to configure.
+**No build step. No server folder. No PHP.**
 
-## What you upload
+## Upload
 
-Run locally (optional):
+Upload the **`SBCC/`** folder to your host (or zip and extract in cPanel):
 
-```bash
-python3 scripts/build-hosting-bundle.py
+```
+your-secret-folder/
+  command-center.html    ← bookmark this
+  mobile/
+  js/
 ```
 
-Upload **everything inside** `hosting-bundle/` to a folder on your host, for example:
+Use an obscure path, e.g. `https://yourdomain.com/x7k/private/smcc/command-center.html`
 
-`https://yourdomain.com/private/smcc/`
+Optional: rename `.htaccess.example` to `.htaccess` and add password protection.
 
-Your personal link:
+## AI — paste keys once
 
-- **Desktop:** `https://yourdomain.com/private/smcc/command-center.html`
-- **Mobile:** `https://yourdomain.com/private/smcc/mobile/command-center.html`
+Open **AI Settings** in the sidebar:
 
-## Requirements (typical free hosting)
+1. **Agent provider** — OpenAI or Anthropic key (chat + form fill)
+2. **Perplexity** — key for web/grant research
 
-| Requirement | Why |
-|-------------|-----|
-| **PHP 7.4+** with **curl** | Integrated AI API (`api/chat.php`, research proxy) |
-| **HTTPS** | Recommended; required for service worker offline shell |
-| **Secret path** | Obscure folder name; optional password via `.htaccess` |
-
-No Node.js required on the host.
-
-## Keep it private
-
-1. Use a non-guessable folder name (`/x7k2-smcc/`, not `/command-center/`).
-2. Copy `.htaccess.example` → `.htaccess` and enable HTTP Basic Auth if your host supports it.
-3. Do not link the page from your public homepage.
-4. `X-Robots-Tag: noindex` is included in the example htaccess.
-
-## AI Settings — zero config
-
-**Backend URL** defaults to **Auto (same site)**. The app calls `/api/` next to your HTML files. You only add:
-
-- OpenAI or Anthropic key (agent)
-- Perplexity key (optional, better research)
-
-## Background research layer
-
-Because dashboard and `api/research/proxy.php` are on **your domain**, the hidden iframe can read and click — the AI browses underneath; you keep using the command center on top.
+Same idea as MCP: you type credentials, the page handles the rest. Keys stay in **your browser** only.
 
 ## Offline vs online
 
-| Feature | Offline (cached) | Needs internet |
-|---------|------------------|----------------|
-| Tasks, profile, grants, void log | Yes (localStorage + cached shell) | — |
-| AI chat | — | Yes |
-| Web research layer | — | Yes |
+| Always works | Needs internet |
+|--------------|----------------|
+| Tasks, profile, grants, void log, search bar | AI chat & Perplexity research |
 
-Install/add to home screen after first visit (HTTPS) for app-like access on phone.
+Open the same bookmark on your phone or laptop — same page, same data on that device (localStorage).
 
-## Local test (same as hosting)
+## Local use
 
-```bash
-python3 scripts/build-hosting-bundle.py
-cd server && npm start
-```
+Double-click `command-center.html` or open via any simple local server. **No Node, no npm, no build.**
 
-Open `http://127.0.0.1:3921/command-center.html` — Node serves the same bundle + API paths as PHP on your host.
-
-## Data stays yours
-
-All business data is in **your browser** on each device. The PHP API only forwards AI requests using **your** API keys — it does not store your profile on the server.
-
-See README **Disclaimer** — you are responsible for protecting your secret URL and device.
+See README disclaimer — protect your secret URL; you are responsible for your data.

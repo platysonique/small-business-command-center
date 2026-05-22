@@ -1,31 +1,7 @@
 /**
- * SBCC AI Assistant — draggable chat + settings + agent actions
- * Requires: command-center globals (loadProfile, PROFILE_FIELDS, TASKS, etc.)
+ * SBCC AI Assistant — chat UI + settings. Agent runs in browser (sbcc-ai-agent.js).
  */
 (function () {
-  const DEFAULT_BACKEND = 'auto';
-
-  function resolveApiBase(settings) {
-    if (window.SBCC_API) return window.SBCC_API.resolveApiBase(settings || loadSettings());
-    const custom = (settings?.backendUrl || '').trim();
-    if (custom && custom !== 'auto') return custom.replace(/\/$/, '');
-    if (window.location.protocol === 'http:' || window.location.protocol === 'https:') {
-      return window.location.origin + (window.SBCC_API?.pageDir?.() ?? window.location.pathname.replace(/\/[^/]+$/, '')) + '/api';
-    }
-    return 'http://127.0.0.1:3921/api';
-  }
-
-  function apiEndpoints(settings) {
-    const base = resolveApiBase(settings);
-    if (window.SBCC_API) return window.SBCC_API.endpoints(base);
-    const b = base.replace(/\/$/, '');
-    return {
-      health: b + '/health.php',
-      chat: b + '/chat.php',
-      proxy: (url) => b + '/research/proxy.php?url=' + encodeURIComponent(url),
-    };
-  }
-
   function detectStorageNs() {
     if (typeof localStorage === 'undefined') return 'sbcc';
     try {
@@ -39,12 +15,7 @@
   function settingsKey() { return storeKey('ai_settings'); }
 
   const DEFAULT_SETTINGS = {
-    backendUrl: DEFAULT_BACKEND,
     activeProvider: 'openai',
-    researchAssistant: {
-      fallbackLayer: true,
-      peekLayer: false,
-    },
     fullAccess: false,
     chatPos: { x: null, y: null },
     chatOpen: false,
@@ -66,7 +37,6 @@
       return {
         ...DEFAULT_SETTINGS,
         ...s,
-        researchAssistant: { ...DEFAULT_SETTINGS.researchAssistant, ...(s.researchAssistant || {}) },
         providers: { ...DEFAULT_SETTINGS.providers, ...(s.providers || {}) },
       };
     } catch {
@@ -208,47 +178,8 @@
     return applied;
   }
 
-  function looksLikeSearch(text) {
-    const t = String(text || '').trim();
-    if (!t) return false;
-    return (
-      /\b(search|find|look up|lookup|research|latest|current|deadline|grant program|funding|eligible|requirements|what grants|how to apply)\b/i.test(t)
-      || (/\b(grant|funding|loan|sba)\b/i.test(t) && t.length > 30)
-      || /\?$/.test(t)
-    );
-  }
-
-  async function maybeLayerPrefetch(message, settings) {
-    const hasPerplexity = !!settings.providers?.perplexity?.apiKey;
-    const layerOn = settings.researchAssistant?.fallbackLayer !== false;
-    if (hasPerplexity || !layerOn || !window.SBCC_LAYER) return null;
-    if (!looksLikeSearch(message)) return null;
-
-    const apiBase = resolveApiBase(settings);
-
-    try {
-      const health = await fetch(apiEndpoints(settings).health, { signal: AbortSignal.timeout(4000) });
-      if (!health.ok) return null;
-    } catch {
-      return null;
-    }
-
-    if (settings.researchAssistant?.peekLayer) window.SBCC_LAYER.setPeek(true);
-
-    return window.SBCC_LAYER.research(message, {
-      backendUrl: apiBase,
-      peek: settings.researchAssistant?.peekLayer,
-      maxPages: 2,
-    });
-  }
-
   function normalizeSettings(s) {
-    if (!['openai', 'anthropic'].includes(s.activeProvider)) {
-      s.activeProvider = 'openai';
-    }
-    if (s.researchAssistant?.fallbackStealth !== undefined && s.researchAssistant.fallbackLayer === undefined) {
-      s.researchAssistant.fallbackLayer = s.researchAssistant.fallbackStealth;
-    }
+    if (!['openai', 'anthropic'].includes(s.activeProvider)) s.activeProvider = 'openai';
     return s;
   }
 
@@ -282,30 +213,15 @@
       </div>
 
       <div class="card ai-research-assistant-card" style="margin-bottom:16px">
-        <div class="card-title">Research assistant</div>
-        <p style="font-size:.72rem;color:var(--muted);margin-bottom:10px;line-height:1.45">Not an agent provider — handles web search &amp; external facts only. Your agent provider calls this when research is needed.</p>
-        <label style="font-size:.68rem;color:var(--muted);display:block;margin-bottom:4px">Perplexity API key <span style="color:var(--primary)">(recommended)</span></label>
+        <div class="card-title">Research assistant — Perplexity</div>
+        <p style="font-size:.72rem;color:var(--muted);margin-bottom:10px;line-height:1.45">Web search &amp; grant research. Not an agent — your agent calls this for external facts. Paste key from perplexity.ai — same idea as MCP: you configure, it runs.</p>
+        <label style="font-size:.68rem;color:var(--muted);display:block;margin-bottom:4px">API key</label>
         <input type="password" id="ai-key-perplexity" value="${esc(s.providers.perplexity?.apiKey || '')}" placeholder="pplx-…" autocomplete="off" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:var(--r);background:var(--offset);font:inherit;margin-bottom:8px">
-        <label style="font-size:.68rem;color:var(--muted);display:block;margin-bottom:4px">Perplexity model</label>
-        <input type="text" id="ai-model-perplexity" value="${esc(s.providers.perplexity?.model || 'sonar-pro')}" placeholder="sonar-pro" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:var(--r);background:var(--offset);font:inherit;margin-bottom:12px">
-        <label style="display:flex;align-items:flex-start;gap:8px;font-size:.78rem;line-height:1.45;cursor:pointer;margin-bottom:8px">
-          <input type="checkbox" id="ai-layer-fallback" ${s.researchAssistant?.fallbackLayer !== false ? 'checked' : ''} style="margin-top:3px">
-          <span><strong>Background research layer</strong> — hidden iframe <em>under</em> this page. AI reads pages and clicks links there only. You keep working on the command center above; nothing steals focus.</span>
-        </label>
-        <label style="display:flex;align-items:flex-start;gap:8px;font-size:.78rem;line-height:1.45;cursor:pointer">
-          <input type="checkbox" id="ai-layer-peek" ${s.researchAssistant?.peekLayer ? 'checked' : ''} style="margin-top:3px">
-          <span><strong>Peek at layer</strong> (debug) — faintly show what the AI is browsing. Off by default.</span>
-        </label>
+        <label style="font-size:.68rem;color:var(--muted);display:block;margin-bottom:4px">Model</label>
+        <input type="text" id="ai-model-perplexity" value="${esc(s.providers.perplexity?.model || 'sonar-pro')}" placeholder="sonar-pro" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:var(--r);background:var(--offset);font:inherit">
       </div>
 
-      <div class="card" style="margin-bottom:16px">
-        <div class="card-title">Backend connection</div>
-        <label style="font-size:.68rem;color:var(--muted);display:block;margin-bottom:4px">AI server URL</label>
-        <input type="text" id="ai-backend-url" value="${esc(s.backendUrl || 'auto')}" placeholder="auto" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:var(--r);background:var(--offset);font:inherit">
-        <p style="font-size:.72rem;color:var(--muted);margin-top:8px;line-height:1.45"><strong>auto</strong> = integrated API in the <code style="font-size:.68rem">api/</code> folder next to this page (upload bundle). Override only for a separate server.</p>
-        <button type="button" class="btn-secondary" id="ai-test-backend" style="margin-top:10px;font-size:.75rem">Test connection</button>
-        <span id="ai-backend-status" style="font-size:.72rem;margin-left:8px;color:var(--muted)"></span>
-      </div>
+      <p style="font-size:.72rem;color:var(--muted);line-height:1.5;margin-bottom:16px">Keys stay in <strong>your browser</strong> only. No server to install — works uploaded online or opened locally. AI needs internet; dashboard data works offline.</p>
 
       <div class="profile-actions">
         <button type="button" class="btn-primary" id="ai-save-settings">Save AI Settings</button>
@@ -322,7 +238,6 @@
       renderChatMessages();
       alert('Chat history cleared.');
     });
-    document.getElementById('ai-test-backend')?.addEventListener('click', testBackend);
   }
 
   function agentProviderCard(id, title, desc, s, disabled) {
@@ -343,14 +258,9 @@
 
   function saveSettingsFromForm() {
     const s = loadSettings();
-    s.backendUrl = document.getElementById('ai-backend-url')?.value?.trim() || DEFAULT_BACKEND;
     s.fullAccess = !!document.getElementById('ai-full-access')?.checked;
     s.activeProvider = document.getElementById('ai-active-provider')?.value || 'openai';
     if (!['openai', 'anthropic'].includes(s.activeProvider)) s.activeProvider = 'openai';
-    s.researchAssistant = {
-      fallbackLayer: !!document.getElementById('ai-layer-fallback')?.checked,
-      peekLayer: !!document.getElementById('ai-layer-peek')?.checked,
-    };
     ['perplexity', 'openai', 'anthropic', 'google'].forEach((id) => {
       s.providers[id] = s.providers[id] || {};
       s.providers[id].apiKey = document.getElementById('ai-key-' + id)?.value?.trim() || '';
@@ -361,22 +271,6 @@
     if (msg) {
       msg.textContent = 'Saved ✓';
       setTimeout(() => { msg.textContent = ''; }, 2500);
-    }
-  }
-
-  async function testBackend() {
-    const status = document.getElementById('ai-backend-status');
-    const s = loadSettings();
-    status.textContent = 'Testing…';
-    status.style.color = 'var(--muted)';
-    try {
-      const res = await fetch(apiEndpoints(s).health, { signal: AbortSignal.timeout(8000) });
-      const data = await res.json();
-      status.textContent = data.ok ? 'Connected ✓' : 'Unexpected response';
-      status.style.color = data.ok ? 'var(--green)' : 'var(--red)';
-    } catch (e) {
-      status.textContent = 'Offline — start server/';
-      status.style.color = 'var(--red)';
     }
   }
 
@@ -402,7 +296,7 @@
           </div>
         </div>
         <div class="sbcc-ai-messages" id="sbcc-ai-messages"></div>
-        <div class="sbcc-ai-status" id="sbcc-ai-status">Ask about your data, grants, or tasks. Search uses the research assistant.</div>
+        <div class="sbcc-ai-status" id="sbcc-ai-status">Paste API keys in AI Settings once — then just chat.</div>
         <div class="sbcc-ai-input-row">
           <textarea class="sbcc-ai-input" id="sbcc-ai-input" rows="2" placeholder="Ask or ask me to fill a field…"></textarea>
           <button type="button" class="sbcc-ai-send" id="sbcc-ai-send">Send</button>
@@ -417,7 +311,9 @@
     setupDrag();
     bindChatEvents();
     renderChatMessages();
-    updateBackendDot();
+    updateStatusDot();
+    window.addEventListener('online', updateStatusDot);
+    window.addEventListener('offline', updateStatusDot);
   }
 
   function positionPanel(s) {
@@ -519,7 +415,7 @@
     if (!box) return;
     box.innerHTML = '';
     if (!chatState.history.length) {
-      box.innerHTML = '<div class="sbcc-ai-msg system">Hi — I can summarize your command center, research grants (Perplexity or stealth server fetch), or fill forms. Sensitive data stays blocked unless Full Access is on.</div>';
+      box.innerHTML = '<div class="sbcc-ai-msg system">Paste your API keys in AI Settings (like MCP). Dashboard works offline; AI needs internet.</div>';
       return;
     }
     chatState.history.forEach((m) => {
@@ -546,43 +442,10 @@
     box.scrollTop = box.scrollHeight;
   }
 
-  async function updateBackendDot() {
+  function updateStatusDot() {
     const dot = document.getElementById('sbcc-ai-dot');
     if (!dot) return;
-    const s = loadSettings();
-    try {
-      const res = await fetch(apiEndpoints(s).health, { signal: AbortSignal.timeout(4000) });
-      dot.style.background = res.ok ? 'var(--green)' : 'var(--orange)';
-    } catch {
-      dot.style.background = 'var(--red)';
-    }
-  }
-
-  async function postChat(text, s, prefetchedResearch = null) {
-    const res = await fetch(apiEndpoints(s).chat, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        message: text,
-        history: chatState.history.filter((m) => m.role === 'user' || m.role === 'assistant').slice(-12).map((m) => ({
-          role: m.role,
-          content: m.content,
-        })),
-        context: exportContext(s.fullAccess),
-        prefetchedResearch,
-        settings: {
-          fullAccess: s.fullAccess,
-          activeProvider: s.activeProvider,
-          researchAssistant: s.researchAssistant,
-          providers: s.providers,
-          sensitiveKeys: getSensitiveKeys(),
-        },
-      }),
-      signal: AbortSignal.timeout(120000),
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Request failed');
-    return data;
+    dot.style.background = navigator.onLine ? 'var(--green)' : 'var(--orange)';
   }
 
   async function sendMessage() {
@@ -591,6 +454,18 @@
     const status = document.getElementById('sbcc-ai-status');
     const text = input?.value?.trim();
     if (!text) return;
+
+    if (!navigator.onLine) {
+      chatState.history.push({ role: 'assistant', content: 'You\'re offline. Tasks and profile still work — reconnect for AI.' });
+      renderChatMessages();
+      return;
+    }
+
+    if (!window.SBCC_AGENT) {
+      chatState.history.push({ role: 'assistant', content: 'AI agent script missing — reload the page.' });
+      renderChatMessages();
+      return;
+    }
 
     const s = normalizeSettings(loadSettings());
     chatState.history.push({ role: 'user', content: text });
@@ -602,19 +477,20 @@
     status.textContent = 'Thinking…';
 
     try {
-      let prefetchedResearch = await maybeLayerPrefetch(text, s);
-      if (prefetchedResearch) status.textContent = 'Reading pages in background layer…';
-
-      let data = await postChat(text, s, prefetchedResearch);
-
-      if (data.needsLayerResearch && window.SBCC_LAYER) {
-        status.textContent = 'Research layer browsing…';
-        prefetchedResearch = await window.SBCC_LAYER.research(data.query || text, {
-          backendUrl: resolveApiBase(s),
-          peek: s.researchAssistant?.peekLayer,
-        });
-        data = await postChat(text, s, prefetchedResearch);
-      }
+      const data = await window.SBCC_AGENT.run({
+        message: text,
+        history: chatState.history.filter((m) => m.role === 'user' || m.role === 'assistant').slice(-12).map((m) => ({
+          role: m.role,
+          content: m.content,
+        })),
+        context: exportContext(s.fullAccess),
+        settings: {
+          fullAccess: s.fullAccess,
+          activeProvider: s.activeProvider,
+          providers: s.providers,
+          sensitiveKeys: getSensitiveKeys(),
+        },
+      });
 
       let reply = data.reply || '';
       if (data.actions?.length) {
@@ -632,33 +508,19 @@
 
       s.history = chatState.history.slice(-50);
       saveSettings(s);
-      const modeLabel = {
-        perplexity: 'Research assistant (Perplexity)',
-        layer: 'Background research layer',
-        'stealth-research': 'Server research',
-        openai: 'OpenAI agent',
-        anthropic: 'Anthropic agent',
-      };
-      status.textContent = modeLabel[data.mode]
-        || (data.researchSource === 'layer'
-          ? 'Answered via background layer'
-          : data.researchSource === 'perplexity'
-            ? 'Answered via Perplexity'
-            : 'Ready');
+      status.textContent = data.mode === 'perplexity' ? 'Research via Perplexity' : data.mode === 'openai' || data.mode === 'anthropic' ? 'Ready' : 'Ready';
     } catch (err) {
       chatState.history.push({
         role: 'assistant',
-        content: err.name === 'TimeoutError'
-          ? 'Request timed out. Try a shorter question.'
-          : `Could not reach AI backend. Start the server: cd server && npm start\n\n(${err.message})`,
+        content: err.message || 'Request failed.',
       });
-      status.textContent = 'Backend offline?';
-      updateBackendDot();
+      status.textContent = 'Error — check keys in AI Settings';
     }
 
     chatState.sending = false;
     document.getElementById('sbcc-ai-send').disabled = false;
     renderChatMessages();
+    updateStatusDot();
   }
 
   function init() {
