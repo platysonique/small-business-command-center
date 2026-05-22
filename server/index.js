@@ -38,8 +38,9 @@ const server = http.createServer(async (req, res) => {
     sendJson(res, 200, {
       ok: true,
       service: 'sbcc-ai-server',
-      version: '1.0.0',
-      providers: ['perplexity', 'openai', 'anthropic'],
+      version: '1.1.0',
+      agentProviders: ['openai', 'anthropic'],
+      researchAssistant: ['perplexity', 'stealth-fallback'],
     });
     return;
   }

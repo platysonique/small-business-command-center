@@ -20,6 +20,9 @@
   const DEFAULT_SETTINGS = {
     backendUrl: DEFAULT_BACKEND,
     activeProvider: 'openai',
+    researchAssistant: {
+      fallbackStealth: true,
+    },
     fullAccess: false,
     chatPos: { x: null, y: null },
     chatOpen: false,
@@ -41,6 +44,7 @@
       return {
         ...DEFAULT_SETTINGS,
         ...s,
+        researchAssistant: { ...DEFAULT_SETTINGS.researchAssistant, ...(s.researchAssistant || {}) },
         providers: { ...DEFAULT_SETTINGS.providers, ...(s.providers || {}) },
       };
     } catch {
@@ -182,21 +186,19 @@
     return applied;
   }
 
+  function normalizeSettings(s) {
+    if (!['openai', 'anthropic'].includes(s.activeProvider)) {
+      s.activeProvider = 'openai';
+    }
+    return s;
+  }
+
   // ─── Settings UI ───
   function renderSettingsForm() {
     const el = document.getElementById('ai-settings-form');
     if (!el) return;
-    const s = loadSettings();
+    const s = normalizeSettings(loadSettings());
     el.innerHTML = `
-      <div class="card" style="margin-bottom:16px">
-        <div class="card-title">Backend connection</div>
-        <label style="font-size:.68rem;color:var(--muted);display:block;margin-bottom:4px">AI server URL</label>
-        <input type="url" id="ai-backend-url" value="${esc(s.backendUrl)}" placeholder="http://localhost:3921" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:var(--r);background:var(--offset);font:inherit">
-        <p style="font-size:.72rem;color:var(--muted);margin-top:8px;line-height:1.45">Run <code style="font-size:.68rem">npm start</code> in the <code style="font-size:.68rem">server/</code> folder. Static GitHub Pages host still works for the dashboard — AI needs this backend.</p>
-        <button type="button" class="btn-secondary" id="ai-test-backend" style="margin-top:10px;font-size:.75rem">Test connection</button>
-        <span id="ai-backend-status" style="font-size:.72rem;margin-left:8px;color:var(--muted)"></span>
-      </div>
-
       <div class="ai-full-access">
         <label>
           <input type="checkbox" id="ai-full-access" ${s.fullAccess ? 'checked' : ''}>
@@ -206,19 +208,40 @@
       </div>
 
       <div class="card" style="margin-bottom:16px">
-        <div class="card-title">Active synthesis provider</div>
+        <div class="card-title">Agent provider</div>
+        <p style="font-size:.72rem;color:var(--muted);margin-bottom:10px;line-height:1.45">One provider runs the assistant — local summaries, form fill, and tool actions. Pick exactly one.</p>
         <select id="ai-active-provider" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:var(--r);background:var(--offset);font:inherit">
-          <option value="openai" ${s.activeProvider === 'openai' ? 'selected' : ''}>OpenAI (agent + tools)</option>
-          <option value="anthropic" ${s.activeProvider === 'anthropic' ? 'selected' : ''}>Anthropic (agent + tools)</option>
-          <option value="perplexity" ${s.activeProvider === 'perplexity' ? 'selected' : ''}>Perplexity only (search-first)</option>
+          <option value="openai" ${s.activeProvider === 'openai' ? 'selected' : ''}>OpenAI — agent + tools</option>
+          <option value="anthropic" ${s.activeProvider === 'anthropic' ? 'selected' : ''}>Anthropic — agent + tools</option>
         </select>
       </div>
 
       <div class="ai-settings-grid">
-        ${providerCard('perplexity', 'Perplexity', 'Required for web search & research. Non-negotiable for external facts.', s, true)}
-        ${providerCard('openai', 'OpenAI', 'Agent orchestration + form fill tools.', s)}
-        ${providerCard('anthropic', 'Anthropic', 'Agent orchestration + form fill tools.', s)}
-        ${providerCard('google', 'Google AI', 'Reserved for future provider plug-in.', s)}
+        ${agentProviderCard('openai', 'OpenAI', 'Agent: chat, form fill, task/grant tools.', s)}
+        ${agentProviderCard('anthropic', 'Anthropic', 'Agent: chat, form fill, task/grant tools.', s)}
+        ${agentProviderCard('google', 'Google AI', 'Reserved for future agent plug-in.', s, true)}
+      </div>
+
+      <div class="card ai-research-assistant-card" style="margin-bottom:16px">
+        <div class="card-title">Research assistant</div>
+        <p style="font-size:.72rem;color:var(--muted);margin-bottom:10px;line-height:1.45">Not an agent provider — handles web search &amp; external facts only. Your agent provider calls this when research is needed.</p>
+        <label style="font-size:.68rem;color:var(--muted);display:block;margin-bottom:4px">Perplexity API key <span style="color:var(--primary)">(recommended)</span></label>
+        <input type="password" id="ai-key-perplexity" value="${esc(s.providers.perplexity?.apiKey || '')}" placeholder="pplx-…" autocomplete="off" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:var(--r);background:var(--offset);font:inherit;margin-bottom:8px">
+        <label style="font-size:.68rem;color:var(--muted);display:block;margin-bottom:4px">Perplexity model</label>
+        <input type="text" id="ai-model-perplexity" value="${esc(s.providers.perplexity?.model || 'sonar-pro')}" placeholder="sonar-pro" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:var(--r);background:var(--offset);font:inherit;margin-bottom:12px">
+        <label style="display:flex;align-items:flex-start;gap:8px;font-size:.78rem;line-height:1.45;cursor:pointer">
+          <input type="checkbox" id="ai-stealth-fallback" ${s.researchAssistant?.fallbackStealth !== false ? 'checked' : ''} style="margin-top:3px">
+          <span><strong>Stealth web research</strong> — if no Perplexity key, the server searches the web invisibly (no browser tab) via DuckDuckGo + page fetch, then your agent synthesizes the answer.</span>
+        </label>
+      </div>
+
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-title">Backend connection</div>
+        <label style="font-size:.68rem;color:var(--muted);display:block;margin-bottom:4px">AI server URL</label>
+        <input type="url" id="ai-backend-url" value="${esc(s.backendUrl)}" placeholder="http://localhost:3921" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:var(--r);background:var(--offset);font:inherit">
+        <p style="font-size:.72rem;color:var(--muted);margin-top:8px;line-height:1.45">Run <code style="font-size:.68rem">npm start</code> in the <code style="font-size:.68rem">server/</code> folder. The static dashboard works offline — AI needs this backend.</p>
+        <button type="button" class="btn-secondary" id="ai-test-backend" style="margin-top:10px;font-size:.75rem">Test connection</button>
+        <span id="ai-backend-status" style="font-size:.72rem;margin-left:8px;color:var(--muted)"></span>
       </div>
 
       <div class="profile-actions">
@@ -239,15 +262,15 @@
     document.getElementById('ai-test-backend')?.addEventListener('click', testBackend);
   }
 
-  function providerCard(id, title, desc, s, required) {
+  function agentProviderCard(id, title, desc, s, disabled) {
     const p = s.providers[id] || {};
-    return `<div class="ai-provider-card ${id}">
-      <h3>${title}${required ? ' <span style="color:var(--red);font-size:.65rem">REQUIRED FOR SEARCH</span>' : ''}</h3>
+    return `<div class="ai-provider-card ${id}${disabled ? ' ai-provider-disabled' : ''}">
+      <h3>${title}${disabled ? ' <span style="font-size:.65rem;color:var(--muted)">COMING SOON</span>' : ''}</h3>
       <p style="font-size:.72rem;color:var(--muted);margin-bottom:8px;line-height:1.4">${desc}</p>
       <label>API key</label>
-      <input type="password" id="ai-key-${id}" value="${esc(p.apiKey || '')}" placeholder="sk-… or pplx-…" autocomplete="off">
+      <input type="password" id="ai-key-${id}" value="${esc(p.apiKey || '')}" placeholder="sk-…" autocomplete="off" ${disabled ? 'disabled' : ''}>
       <label>Model</label>
-      <input type="text" id="ai-model-${id}" value="${esc(p.model || '')}" placeholder="Model id">
+      <input type="text" id="ai-model-${id}" value="${esc(p.model || '')}" placeholder="Model id" ${disabled ? 'disabled' : ''}>
     </div>`;
   }
 
@@ -260,6 +283,10 @@
     s.backendUrl = document.getElementById('ai-backend-url')?.value?.trim() || DEFAULT_BACKEND;
     s.fullAccess = !!document.getElementById('ai-full-access')?.checked;
     s.activeProvider = document.getElementById('ai-active-provider')?.value || 'openai';
+    if (!['openai', 'anthropic'].includes(s.activeProvider)) s.activeProvider = 'openai';
+    s.researchAssistant = {
+      fallbackStealth: !!document.getElementById('ai-stealth-fallback')?.checked,
+    };
     ['perplexity', 'openai', 'anthropic', 'google'].forEach((id) => {
       s.providers[id] = s.providers[id] || {};
       s.providers[id].apiKey = document.getElementById('ai-key-' + id)?.value?.trim() || '';
@@ -311,7 +338,7 @@
           </div>
         </div>
         <div class="sbcc-ai-messages" id="sbcc-ai-messages"></div>
-        <div class="sbcc-ai-status" id="sbcc-ai-status">Ask about your grants, profile, or tasks. Search uses Perplexity.</div>
+        <div class="sbcc-ai-status" id="sbcc-ai-status">Ask about your data, grants, or tasks. Search uses the research assistant.</div>
         <div class="sbcc-ai-input-row">
           <textarea class="sbcc-ai-input" id="sbcc-ai-input" rows="2" placeholder="Ask or ask me to fill a field…"></textarea>
           <button type="button" class="sbcc-ai-send" id="sbcc-ai-send">Send</button>
@@ -428,7 +455,7 @@
     if (!box) return;
     box.innerHTML = '';
     if (!chatState.history.length) {
-      box.innerHTML = '<div class="sbcc-ai-msg system">Hi — I can summarize your command center, research grants via Perplexity, or fill forms. Sensitive data stays blocked unless Full Access is on in AI Settings.</div>';
+      box.innerHTML = '<div class="sbcc-ai-msg system">Hi — I can summarize your command center, research grants (Perplexity or stealth server fetch), or fill forms. Sensitive data stays blocked unless Full Access is on.</div>';
       return;
     }
     chatState.history.forEach((m) => {
@@ -499,6 +526,7 @@
           settings: {
             fullAccess: s.fullAccess,
             activeProvider: s.activeProvider,
+            researchAssistant: s.researchAssistant,
             providers: s.providers,
             sensitiveKeys: getSensitiveKeys(),
           },
@@ -525,7 +553,18 @@
 
       s.history = chatState.history.slice(-50);
       saveSettings(s);
-      status.textContent = data.mode === 'perplexity' ? 'Answered via Perplexity search' : 'Ready';
+      const modeLabel = {
+        perplexity: 'Research assistant (Perplexity)',
+        'stealth-research': 'Stealth web research',
+        openai: 'OpenAI agent',
+        anthropic: 'Anthropic agent',
+      };
+      status.textContent = modeLabel[data.mode]
+        || (data.researchSource === 'stealth'
+          ? 'Answered via stealth research'
+          : data.researchSource === 'perplexity'
+            ? 'Answered via Perplexity'
+            : 'Ready');
     } catch (err) {
       chatState.history.push({
         role: 'assistant',

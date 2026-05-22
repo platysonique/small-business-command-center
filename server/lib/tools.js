@@ -1,3 +1,19 @@
+export const RESEARCH_TOOL = {
+  type: 'function',
+  function: {
+    name: 'web_research',
+    description:
+      'Research assistant — MANDATORY for external facts, grant programs, deadlines, and web search. Uses Perplexity when configured; otherwise server-side stealth web fetch (invisible to user). Returns grounded text and URLs.',
+    parameters: {
+      type: 'object',
+      properties: {
+        query: { type: 'string', description: 'Search query' },
+      },
+      required: ['query'],
+    },
+  },
+};
+
 export const AGENT_TOOLS = [
   {
     type: 'function',
@@ -69,21 +85,11 @@ export const AGENT_TOOLS = [
       },
     },
   },
-  {
-    type: 'function',
-    function: {
-      name: 'perplexity_search',
-      description: 'MANDATORY for external facts, grants research, deadlines, and web search. Returns grounded results with citations.',
-      parameters: {
-        type: 'object',
-        properties: {
-          query: { type: 'string', description: 'Search query' },
-        },
-        required: ['query'],
-      },
-    },
-  },
+  RESEARCH_TOOL,
 ];
+
+/** @deprecated alias — agent accepts legacy tool name */
+export const LEGACY_RESEARCH_TOOL_NAMES = ['web_research', 'perplexity_search'];
 
 export function toolCallToAction(name, args) {
   switch (name) {
@@ -100,27 +106,30 @@ export function toolCallToAction(name, args) {
   }
 }
 
-export function buildSystemPrompt({ intent, fullAccess, hasPerplexity }) {
+export function buildSystemPrompt({ intent, fullAccess, hasResearchAssistant, researchSource }) {
   const sensitiveNote = fullAccess
     ? 'User enabled FULL ACCESS — sensitive profile fields may be read and filled.'
     : 'Sensitive fields (EIN, phone, address, DOB, owner name, etc.) are REDACTED. Never guess or invent them. Do not emit fill_profile actions for sensitive keys.';
 
-  const searchRule = hasPerplexity
-    ? 'For search/research/external facts you MUST call perplexity_search. Do NOT answer from internal knowledge alone.'
-    : 'Perplexity is NOT configured. For external research, tell the user to add a Perplexity API key in AI Settings. You may only synthesize from command center data provided.';
+  const researchRule = hasResearchAssistant
+    ? researchSource === 'perplexity'
+      ? 'For external facts you MUST call web_research (Perplexity research assistant). Do NOT answer from internal knowledge alone.'
+      : 'For external facts you MUST call web_research (server stealth fetch — no visible browser tab). Do NOT answer from internal knowledge alone.'
+    : 'Research assistant is NOT available. For external research, tell the user to add a Perplexity API key or enable stealth fallback in AI Settings. You may only synthesize from command center data provided.';
 
   return `You are the SBCC AI Assistant for a small business grant & operations command center.
 
+You run on ONE agent provider (OpenAI or Anthropic). Web research is handled by a separate research assistant tool — not by switching providers.
+
 ${sensitiveNote}
 
-${searchRule}
+${researchRule}
 
 Intents:
 - local: summarize or explain data already in the command center context JSON.
-- search: use perplexity_search, then synthesize a helpful answer with citations when available.
-- form_fill: use tools to fill profile fields, add tasks, grants, or narratives based on user request and available data.
+- search: research assistant gathers web results; you synthesize a helpful answer with citations when available.
+- form_fill: use form tools (profile, tasks, grants, narratives). Call web_research first when grant-related facts are needed.
 
-When filling forms, prefer accurate researched content via perplexity_search first for grant-related answers.
 Return concise, actionable replies. When you use tools, explain what you changed.`;
 }
 

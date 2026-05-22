@@ -32,6 +32,9 @@
 .ai-provider-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:14px}
 .ai-provider-card h3{font-size:.85rem;margin-bottom:8px;display:flex;align-items:center;gap:6px}
 .ai-provider-card.perplexity h3{color:var(--primary)}
+.ai-research-assistant-card{border-color:var(--primary);background:var(--primary-hl)}
+.ai-provider-disabled{opacity:.65}
+.ai-provider-disabled input{pointer-events:none}
 .ai-provider-card label{font-size:.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;display:block;margin:8px 0 4px}
 .ai-provider-card input,.ai-provider-card select{width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:var(--r);background:var(--offset);font:inherit;font-size:.82rem;color:var(--text)}
 .ai-full-access{border:2px solid var(--red);background:var(--red-hl);border-radius:var(--r-lg);padding:16px;margin-bottom:20px}

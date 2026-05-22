@@ -2,42 +2,19 @@ import { classifyIntent } from './classify.js';
 import { redactContext, stripSensitiveFromActions } from './redact.js';
 import {
   AGENT_TOOLS,
+  RESEARCH_TOOL,
   buildSystemPrompt,
   toolCallToAction,
 } from './tools.js';
-import {
-  resolveProviderKeys,
-  perplexityChat,
-  chatWithProvider,
-} from './providers.js';
+import { resolveProviderKeys, chatWithProvider } from './providers.js';
+import { runWebResearch } from './research.js';
 
-async function runPerplexitySearch(query, keys) {
-  const result = await perplexityChat({
-    apiKey: keys.perplexity,
-    model: keys.models.perplexity,
-    messages: [
-      {
-        role: 'system',
-        content: 'You are a research assistant. Provide factual, cited answers. Include source URLs when available.',
-      },
-      { role: 'user', content: query },
-    ],
-  });
-  return result;
-}
+const AGENT_PROVIDERS = ['openai', 'anthropic'];
 
-async function executeToolCall(name, args, keys) {
-  if (name === 'perplexity_search') {
-    const result = await runPerplexitySearch(args.query, keys);
-    return {
-      type: 'search_result',
-      content: result.content,
-      citations: result.citations || [],
-    };
-  }
-  const action = toolCallToAction(name, args);
-  if (action) return { type: 'client_action', action };
-  return { type: 'unknown', name, args };
+function normalizeAgentProvider(settings) {
+  const p = settings.activeProvider || 'openai';
+  if (AGENT_PROVIDERS.includes(p)) return p;
+  return 'openai';
 }
 
 function parseToolArgs(raw) {
@@ -59,59 +36,118 @@ function extractToolCalls(message) {
   }));
 }
 
+async function executeToolCall(name, args, keys, settings) {
+  if (name === 'web_research' || name === 'perplexity_search') {
+    const query = args.query || args.q || '';
+    const result = await runWebResearch(query, keys, settings);
+    return {
+      type: 'search_result',
+      content: result.content,
+      citations: result.citations || [],
+      source: result.source,
+    };
+  }
+  const action = toolCallToAction(name, args);
+  if (action) return { type: 'client_action', action };
+  return { type: 'unknown', name, args };
+}
+
+async function synthesizeSearchAnswer(message, research, keys, agentProvider, safeContext, history) {
+  const agentKey = keys[agentProvider];
+  if (!agentKey) {
+    return {
+      reply: research.content,
+      mode: research.source === 'stealth' ? 'stealth-research' : 'perplexity',
+      citations: research.citations || [],
+    };
+  }
+
+  const system = buildSystemPrompt({
+    intent: 'search',
+    fullAccess: false,
+    hasResearchAssistant: true,
+    researchSource: research.source,
+  });
+
+  const response = await chatWithProvider(agentProvider, {
+    apiKey: agentKey,
+    model: keys.models[agentProvider],
+    messages: [
+      {
+        role: 'system',
+        content: `${system}\n\nCommand center context (JSON):\n${JSON.stringify(safeContext, null, 2).slice(0, 8000)}`,
+      },
+      ...history.slice(-6).map((m) => ({ role: m.role, content: m.content })),
+      {
+        role: 'user',
+        content: `${message}\n\n--- Web research (${research.source}) ---\n${research.content}`,
+      },
+    ],
+  });
+
+  const reply = response.choices?.[0]?.message?.content || research.content;
+  return {
+    reply,
+    mode: agentProvider,
+    citations: research.citations || [],
+    researchSource: research.source,
+  };
+}
+
 export async function runAgent({ message, history = [], context = {}, settings = {} }) {
   const fullAccess = !!settings.fullAccess;
   const keys = resolveProviderKeys(settings);
   const intent = classifyIntent(message);
   const safeContext = redactContext(context, fullAccess, settings.sensitiveKeys || []);
-  const hasPerplexity = !!keys.perplexity;
+  const agentProvider = normalizeAgentProvider(settings);
+  const agentKey = keys[agentProvider];
+  const hasResearchAssistant = !!keys.perplexity || settings.researchAssistant?.fallbackStealth !== false;
 
-  // Hard rule: search intent requires Perplexity
-  if (intent === 'search' && !hasPerplexity) {
-    const localFallback = intent === 'search' && safeContext
-      ? '\n\n(I can only use your command center data without Perplexity. Add your Perplexity API key in AI Settings → Providers for web research.)'
-      : '';
-    return {
-      reply: `Perplexity API is required for search and external research, but no key is configured.${localFallback}`,
-      mode: 'search_blocked',
-      intent,
-      actions: [],
-      citations: [],
-    };
+  // ─── Search intent: research assistant first, agent synthesizes ───
+  if (intent === 'search') {
+    if (!hasResearchAssistant) {
+      return {
+        reply: 'Web research is unavailable. Add a Perplexity API key under Research Assistant, or enable stealth fallback in AI Settings.',
+        mode: 'search_blocked',
+        intent,
+        actions: [],
+        citations: [],
+      };
+    }
+
+    try {
+      const research = await runWebResearch(message, keys, settings);
+      const synthesized = await synthesizeSearchAnswer(
+        message,
+        research,
+        keys,
+        agentProvider,
+        safeContext,
+        history,
+      );
+      return {
+        reply: synthesized.reply,
+        mode: synthesized.mode,
+        intent,
+        actions: [],
+        citations: synthesized.citations,
+        researchSource: synthesized.researchSource || research.source,
+      };
+    } catch (err) {
+      return {
+        reply: `Research failed: ${err.message}. Check your Perplexity key or try again.`,
+        mode: 'search_error',
+        intent,
+        actions: [],
+        citations: [],
+      };
+    }
   }
 
-  // Direct Perplexity path for pure search
-  if (intent === 'search' && hasPerplexity && !['openai', 'anthropic'].includes(settings.activeProvider)) {
-    const ctxBlock = JSON.stringify(safeContext, null, 2).slice(0, 12000);
-    const result = await perplexityChat({
-      apiKey: keys.perplexity,
-      model: keys.models.perplexity,
-      messages: [
-        {
-          role: 'system',
-          content: `${buildSystemPrompt({ intent, fullAccess, hasPerplexity })}\n\nCommand center context:\n${ctxBlock}`,
-        },
-        ...history.slice(-8).map((m) => ({ role: m.role, content: m.content })),
-        {
-          role: 'user',
-          content: message,
-        },
-      ],
-    });
+  // ─── Agent path (local + form_fill): one provider only ───
+  if (!agentKey) {
     return {
-      reply: result.content,
-      mode: 'perplexity',
-      intent,
-      actions: [],
-      citations: result.citations || [],
-    };
-  }
-
-  const provider = settings.activeProvider || 'openai';
-  const providerKey = keys[provider];
-  if (!providerKey && intent !== 'search') {
-    return {
-      reply: 'No AI provider configured. Open AI Settings and add an OpenAI or Anthropic API key (or set Perplexity as active provider for search).',
+      reply: `No agent provider configured. Open AI Settings, pick OpenAI or Anthropic under Agent Provider, and add its API key.`,
       mode: 'no_provider',
       intent,
       actions: [],
@@ -119,7 +155,12 @@ export async function runAgent({ message, history = [], context = {}, settings =
     };
   }
 
-  const system = buildSystemPrompt({ intent, fullAccess, hasPerplexity });
+  const system = buildSystemPrompt({
+    intent,
+    fullAccess,
+    hasResearchAssistant,
+    researchSource: keys.perplexity ? 'perplexity' : 'stealth',
+  });
   const ctxBlock = JSON.stringify(safeContext, null, 2).slice(0, 14000);
   const messages = [
     { role: 'system', content: `${system}\n\nCommand center context (JSON):\n${ctxBlock}` },
@@ -131,31 +172,21 @@ export async function runAgent({ message, history = [], context = {}, settings =
   const citations = [];
   let loops = 0;
   let lastContent = '';
+  let lastResearchSource = null;
+
+  const formTools = AGENT_TOOLS.filter((t) => t.function.name !== 'web_research');
+  const allTools = [...formTools, RESEARCH_TOOL];
 
   while (loops < 5) {
     loops += 1;
-    const useTools = intent !== 'search' || loops > 1 ? AGENT_TOOLS : [
-      ...AGENT_TOOLS.filter((t) => t.function.name === 'perplexity_search'),
-    ];
 
-    let response;
-    if (provider === 'openai' || !providerKey) {
-      if (!keys.openai && provider !== 'openai') break;
-      response = await chatWithProvider('openai', {
-        apiKey: keys.openai || providerKey,
-        messages,
-        model: keys.models.openai,
-        tools: useTools,
-      });
-    } else {
-      response = await chatWithProvider('anthropic', {
-        apiKey: keys.anthropic,
-        messages,
-        model: keys.models.anthropic,
-        system,
-        tools: useTools,
-      });
-    }
+    const response = await chatWithProvider(agentProvider, {
+      apiKey: agentKey,
+      model: keys.models[agentProvider],
+      messages,
+      system,
+      tools: allTools,
+    });
 
     const assistantMsg = response.choices?.[0]?.message;
     if (!assistantMsg) break;
@@ -166,46 +197,56 @@ export async function runAgent({ message, history = [], context = {}, settings =
     if (!toolCalls.length) {
       return {
         reply: lastContent,
-        mode: provider,
+        mode: agentProvider,
         intent,
         actions: stripSensitiveFromActions(actions, fullAccess),
         citations,
+        researchSource: lastResearchSource,
       };
     }
 
     messages.push(assistantMsg);
 
     for (const tc of toolCalls) {
-      if (tc.name === 'perplexity_search' && !hasPerplexity) {
+      if ((tc.name === 'web_research' || tc.name === 'perplexity_search') && !hasResearchAssistant) {
         messages.push({
           role: 'tool',
           tool_call_id: tc.id,
-          content: 'ERROR: Perplexity API key not configured.',
+          content: 'ERROR: No research assistant available. Enable Perplexity or stealth fallback in AI Settings.',
         });
         continue;
       }
 
-      const result = await executeToolCall(tc.name, tc.args, keys);
+      try {
+        const result = await executeToolCall(tc.name, tc.args, keys, settings);
 
-      if (result.type === 'search_result') {
-        if (result.citations?.length) citations.push(...result.citations);
+        if (result.type === 'search_result') {
+          lastResearchSource = result.source;
+          if (result.citations?.length) citations.push(...result.citations);
+          messages.push({
+            role: 'tool',
+            tool_call_id: tc.id,
+            content: result.content,
+          });
+        } else if (result.type === 'client_action') {
+          actions.push(result.action);
+          messages.push({
+            role: 'tool',
+            tool_call_id: tc.id,
+            content: JSON.stringify({ ok: true, queued: result.action }),
+          });
+        } else {
+          messages.push({
+            role: 'tool',
+            tool_call_id: tc.id,
+            content: JSON.stringify(result),
+          });
+        }
+      } catch (err) {
         messages.push({
           role: 'tool',
           tool_call_id: tc.id,
-          content: result.content,
-        });
-      } else if (result.type === 'client_action') {
-        actions.push(result.action);
-        messages.push({
-          role: 'tool',
-          tool_call_id: tc.id,
-          content: JSON.stringify({ ok: true, queued: result.action }),
-        });
-      } else {
-        messages.push({
-          role: 'tool',
-          tool_call_id: tc.id,
-          content: JSON.stringify(result),
+          content: `ERROR: ${err.message}`,
         });
       }
     }
@@ -213,9 +254,10 @@ export async function runAgent({ message, history = [], context = {}, settings =
 
   return {
     reply: lastContent || 'Done.',
-    mode: provider,
+    mode: agentProvider,
     intent,
     actions: stripSensitiveFromActions(actions, fullAccess),
     citations,
+    researchSource: lastResearchSource,
   };
 }
