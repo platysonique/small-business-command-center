@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Small Business Command Center</title>
+<meta name="description" content="Grant and operations dashboard for small businesses. No install — open in your browser or host anywhere.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root,[data-theme="light"]{
+  --bg:#f7f6f2;--surface:#f9f8f5;--offset:#edeae5;--border:#d4d1ca;
+  --text:#28251d;--muted:#7a7974;--primary:#01696f;--primary-hl:#cedcd8;--inverse:#f9f8f4;
+  --r:0.5rem;--r-lg:0.75rem;
+}
+[data-theme="dark"]{
+  --bg:#171614;--surface:#1c1b19;--offset:#22211f;--border:#393836;
+  --text:#cdccca;--muted:#797876;--primary:#4f98a3;--primary-hl:#313b3b;--inverse:#2b2a28;
+}
+html{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100dvh}
+body{min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px}
+.wrap{max-width:520px;width:100%;text-align:center}
+h1{font-family:'Instrument Serif',serif;font-size:clamp(1.75rem,5vw,2.25rem);font-weight:400;margin-bottom:8px;line-height:1.15}
+.lead{font-size:.92rem;color:var(--muted);line-height:1.55;margin-bottom:28px}
+.cards{display:grid;gap:12px;margin-bottom:24px}
+a.card{display:block;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:18px 20px;text-decoration:none;color:inherit;text-align:left;transition:border-color .15s,transform .12s}
+a.card:hover{border-color:var(--primary);transform:translateY(-1px)}
+.card strong{display:block;font-size:.95rem;margin-bottom:4px}
+.card span{font-size:.78rem;color:var(--muted);line-height:1.45}
+.note{font-size:.72rem;color:var(--muted);line-height:1.5;max-width:440px;margin:0 auto 20px}
+.btn-row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.btn{font-size:.75rem;padding:8px 14px;border-radius:999px;border:1px solid var(--border);background:var(--offset);color:var(--muted);cursor:pointer;font:inherit}
+.btn:hover{color:var(--text)}
+.btn-primary{background:var(--primary);color:var(--inverse);border-color:transparent}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Small Business Command Center</h1>
+  <p class="lead">Grant tracking, application profile, checklists, and copy — runs entirely in your browser. No install, no server, no account.</p>
+  <div class="cards">
+    <a class="card" href="SBCC/command-center.html">
+      <strong>Desktop Command Center</strong>
+      <span>Full sidebar layout — grants, calendar, profile, grant copy, checklists.</span>
+    </a>
+    <a class="card" href="SBCC/mobile/command-center.html">
+      <strong>Mobile Command Center</strong>
+      <span>Bottom navigation, touch-friendly — same features, phone-first.</span>
+    </a>
+  </div>
+  <p class="note">Your data stays on your device in <strong>localStorage</strong>. Upload this folder to GitHub Pages, Netlify, Cloudflare Pages, S3, or any static host — or double-click an HTML file offline.</p>
+  <div class="btn-row">
+    <button type="button" class="btn btn-primary" onclick="location.href='SBCC/command-center.html'">Open desktop</button>
+    <button type="button" class="btn" id="theme-btn" onclick="toggleTheme()">Toggle theme</button>
+  </div>
+</div>
+<script>
+function toggleTheme(){
+  const html=document.documentElement;
+  html.setAttribute('data-theme',html.getAttribute('data-theme')==='dark'?'light':'dark');
+}
+</script>
+</body>
+</html>

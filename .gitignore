@@ -1,0 +1,11 @@
+# Local filled-in instance (may contain business PII — keep off public repo)
+Pombomb Media/
+
+# Python
+__pycache__/
+*.pyc
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.swp

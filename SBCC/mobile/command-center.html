@@ -1,0 +1,2019 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#171614">
+<title>SBCC Mobile</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300..700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root,[data-theme="light"]{
+  --bg:#f7f6f2;--surface:#f9f8f5;--surface-2:#fbfbf9;--offset:#edeae5;--dynamic:#dcd9d5;
+  --border:#d4d1ca;--divider:#dcd9d5;
+  --text:#28251d;--muted:#7a7974;--faint:#bab9b4;--inverse:#f9f8f4;
+  --primary:#01696f;--primary-h:#0c4e54;--primary-hl:#cedcd8;
+  --red:#a12c7b;--red-h:#7d1e5e;--red-hl:#e0ced7;
+  --orange:#da7101;--orange-h:#c55700;--orange-hl:#e7d7c4;
+  --gold:#d19900;--gold-h:#b07a00;--gold-hl:#e9e0c6;
+  --green:#437a22;--green-h:#2e5c10;--green-hl:#d4dfcc;
+  --blue:#006494;--blue-h:#0b5177;--blue-hl:#c6d8e4;
+  --purple:#7a39bb;--purple-h:#5f2699;--purple-hl:#dacfde;
+  --shadow-sm:0 1px 2px rgba(40,37,29,.06);
+  --shadow-md:0 4px 12px rgba(40,37,29,.1);
+  --shadow-lg:0 12px 32px rgba(40,37,29,.14);
+  --r:0.5rem;--r-lg:0.75rem;--r-full:9999px;
+}
+[data-theme="dark"]{
+  --bg:#171614;--surface:#1c1b19;--surface-2:#201f1d;--offset:#22211f;--dynamic:#2d2c2a;
+  --border:#393836;--divider:#262523;
+  --text:#cdccca;--muted:#797876;--faint:#5a5957;--inverse:#2b2a28;
+  --primary:#4f98a3;--primary-h:#227f8b;--primary-hl:#313b3b;
+  --red:#d163a7;--red-h:#b9478f;--red-hl:#4c3d46;
+  --orange:#fdab43;--orange-h:#fec47e;--orange-hl:#564b3e;
+  --gold:#e8af34;--gold-h:#fdc551;--gold-hl:#4d4332;
+  --green:#6daa45;--green-h:#4d8f25;--green-hl:#3a4435;
+  --blue:#5591c7;--blue-h:#3b78ab;--blue-hl:#3a4550;
+  --purple:#a86fdf;--purple-h:#9250d0;--purple-hl:#4e4652;
+  --shadow-sm:0 1px 2px rgba(0,0,0,.2);
+  --shadow-md:0 4px 12px rgba(0,0,0,.3);
+  --shadow-lg:0 12px 32px rgba(0,0,0,.4);
+}
+
+html{font-family:'Inter',sans-serif;font-size:14px;background:var(--bg);color:var(--text);min-height:100dvh;-webkit-font-smoothing:antialiased}
+body{display:flex;min-height:100dvh}
+a{color:inherit;text-decoration:none}
+button{cursor:pointer;background:none;border:none;font:inherit;color:inherit}
+input[type=checkbox]{cursor:pointer;accent-color:var(--primary);width:16px;height:16px;flex-shrink:0}
+
+/* SIDEBAR */
+.sidebar{width:220px;flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;height:100dvh;position:sticky;top:0;overflow-y:auto}
+.sidebar-logo{padding:20px 16px 12px;border-bottom:1px solid var(--divider)}
+.sidebar-logo .brand{font-family:'Instrument Serif',serif;font-size:1.1rem;color:var(--text);line-height:1.2}
+.sidebar-logo .sub{font-size:0.7rem;color:var(--muted);letter-spacing:.04em;text-transform:uppercase;margin-top:2px}
+.sidebar-nav{padding:8px 0;flex:1}
+.nav-section{padding:16px 16px 4px;font-size:0.65rem;color:var(--faint);letter-spacing:.08em;text-transform:uppercase;font-weight:600}
+.nav-item{display:flex;align-items:center;gap:8px;padding:7px 16px;border-radius:0;cursor:pointer;transition:background .15s,color .15s;font-size:0.82rem;color:var(--muted);width:100%;text-align:left;border-left:2px solid transparent}
+.nav-item:hover{background:var(--offset);color:var(--text)}
+.nav-item.active{background:var(--primary-hl);color:var(--primary);border-left-color:var(--primary);font-weight:500}
+.nav-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.nav-badge{margin-left:auto;background:var(--red);color:white;font-size:0.6rem;padding:1px 5px;border-radius:var(--r-full);font-weight:600}
+.sidebar-footer{padding:12px 16px;border-top:1px solid var(--divider);display:flex;align-items:center;justify-content:space-between}
+.sidebar-footer .progress-label{font-size:0.7rem;color:var(--muted)}
+.sidebar-footer .progress-val{font-size:0.85rem;font-weight:600;color:var(--primary)}
+.theme-btn{width:30px;height:30px;border-radius:var(--r);background:var(--offset);display:flex;align-items:center;justify-content:center;color:var(--muted);transition:background .15s,color .15s}
+.theme-btn:hover{background:var(--dynamic);color:var(--text)}
+
+/* MAIN */
+.main{flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden}
+.topbar{padding:14px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface);position:sticky;top:0;z-index:10}
+.topbar h1{font-size:1rem;font-weight:600}
+.topbar .status-pills{display:flex;gap:8px}
+.pill{font-size:0.68rem;padding:3px 10px;border-radius:var(--r-full);font-weight:600;letter-spacing:.02em}
+.pill-red{background:var(--red-hl);color:var(--red)}
+.pill-orange{background:var(--orange-hl);color:var(--orange)}
+.pill-gold{background:var(--gold-hl);color:var(--gold)}
+.pill-green{background:var(--green-hl);color:var(--green)}
+.pill-blue{background:var(--blue-hl);color:var(--blue)}
+.pill-purple{background:var(--purple-hl);color:var(--purple)}
+.pill-primary{background:var(--primary-hl);color:var(--primary)}
+
+/* VIEWS */
+.view{display:none;padding:24px;overflow-y:auto;flex:1}
+.view.active{display:block}
+
+/* PROGRESS BAR */
+.progress-bar-wrap{background:var(--offset);border-radius:var(--r-full);height:6px;overflow:hidden;margin-top:4px}
+.progress-bar-fill{height:100%;background:var(--primary);border-radius:var(--r-full);transition:width .4s ease}
+
+/* CARDS */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:16px;box-shadow:var(--shadow-sm)}
+.card-title{font-size:0.8rem;font-weight:600;color:var(--muted);letter-spacing:.04em;text-transform:uppercase;margin-bottom:12px}
+
+/* STAT GRID */
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:24px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:14px;box-shadow:var(--shadow-sm)}
+.stat-label{font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px}
+.stat-value{font-size:1.5rem;font-weight:700;color:var(--text);font-variant-numeric:tabular-nums;line-height:1}
+.stat-sub{font-size:0.7rem;color:var(--muted);margin-top:4px}
+
+/* CHECKLIST */
+.checklist-section{margin-bottom:24px}
+.checklist-header{display:flex;align-items:center;gap:10px;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--divider);flex-wrap:wrap}
+.checklist-header h2{font-size:0.92rem;font-weight:600}
+.checklist-header .btn-add{margin-left:0}
+.checklist-count{font-size:0.7rem;color:var(--muted);margin-left:auto}
+.task-item{display:flex;align-items:flex-start;gap:10px;padding:8px 10px;border-radius:var(--r);margin-bottom:2px;transition:background .12s;cursor:pointer}
+.task-item:hover{background:var(--offset)}
+.task-item.done .task-text{text-decoration:line-through;color:var(--faint)}
+.task-item.done .task-label{opacity:.5}
+.task-text{flex:1;font-size:0.82rem;line-height:1.45;color:var(--text)}
+.task-link{color:var(--primary);font-weight:500;font-size:0.75rem;margin-left:6px;white-space:nowrap;padding:1px 6px;background:var(--primary-hl);border-radius:var(--r-full);display:inline-flex;align-items:center;gap:3px;transition:background .12s,color .12s}
+.task-link:hover{background:var(--primary);color:var(--inverse)}
+.task-label{font-size:0.65rem;padding:2px 6px;border-radius:var(--r-full);font-weight:600;white-space:nowrap;flex-shrink:0;margin-top:2px}
+.task-deadline{font-size:0.68rem;color:var(--muted);margin-top:2px;display:block}
+.task-meta{display:flex;flex-direction:column;align-items:flex-end;gap:2px;min-width:fit-content}
+
+/* CALENDAR */
+.calendar-wrap{display:flex;flex-direction:column;gap:16px}
+.cal-month{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--shadow-sm)}
+.cal-month-header{padding:12px 16px;background:var(--offset);border-bottom:1px solid var(--border);font-size:0.85rem;font-weight:700;display:flex;align-items:center;gap:8px}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:0}
+.cal-day-label{text-align:center;padding:6px;font-size:0.65rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.04em;border-bottom:1px solid var(--divider)}
+.cal-day{min-height:64px;padding:4px 5px;border-right:1px solid var(--divider);border-bottom:1px solid var(--divider);position:relative;transition:background .12s;font-size:0.72rem}
+.cal-day:nth-child(7n){border-right:none}
+.cal-day.empty{background:var(--bg)}
+.cal-day.today{background:var(--primary-hl)}
+.cal-day.today .cal-date{color:var(--primary);font-weight:700}
+.cal-date{font-size:0.7rem;font-weight:500;color:var(--muted);display:block;margin-bottom:2px}
+.cal-event{font-size:0.62rem;padding:2px 4px;border-radius:3px;margin-bottom:2px;line-height:1.3;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;transition:opacity .12s}
+.cal-event:hover{opacity:.8}
+.ev-red{background:var(--red-hl);color:var(--red)}
+.ev-orange{background:var(--orange-hl);color:var(--orange)}
+.ev-gold{background:var(--gold-hl);color:var(--gold)}
+.ev-green{background:var(--green-hl);color:var(--green)}
+.ev-blue{background:var(--blue-hl);color:var(--blue)}
+.ev-purple{background:var(--purple-hl);color:var(--purple)}
+.ev-primary{background:var(--primary-hl);color:var(--primary)}
+
+/* LEGEND */
+.legend{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:0.7rem;color:var(--muted)}
+.legend-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+
+/* SECTION DIVIDER */
+.section-heading{font-size:0.9rem;font-weight:700;margin:28px 0 12px;display:flex;align-items:center;gap:8px}
+.section-heading::after{content:'';flex:1;height:1px;background:var(--divider)}
+
+/* LINK LIST */
+.link-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-bottom:24px}
+.link-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:14px;box-shadow:var(--shadow-sm);display:flex;flex-direction:column;gap:6px;transition:box-shadow .15s,border-color .15s}
+.link-card:hover{box-shadow:var(--shadow-md);border-color:var(--primary)}
+.link-card-name{font-size:0.82rem;font-weight:600;color:var(--text)}
+.link-card-desc{font-size:0.72rem;color:var(--muted);line-height:1.4}
+.link-card-url{font-size:0.7rem;color:var(--primary);margin-top:auto;display:flex;align-items:center;gap:4px}
+.link-card-amt{font-size:0.68rem;font-weight:700;padding:2px 7px;border-radius:var(--r-full);margin-top:4px;width:fit-content}
+
+/* TOOLTIP */
+.tooltip-wrap{position:relative;display:inline-block}
+.tooltip{position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:var(--surface-2, #333);color:var(--text);border:1px solid var(--border);border-radius:var(--r);padding:6px 10px;font-size:0.72rem;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .15s;z-index:100;box-shadow:var(--shadow-md)}
+.tooltip-wrap:hover .tooltip{opacity:1}
+
+/* EDUCATION TABLE */
+.edu-table{width:100%;border-collapse:collapse;margin-bottom:24px;font-size:0.78rem}
+.edu-table th{text-align:left;padding:8px 10px;font-size:0.65rem;color:var(--muted);letter-spacing:.04em;text-transform:uppercase;border-bottom:2px solid var(--border);font-weight:600}
+.edu-table td{padding:8px 10px;border-bottom:1px solid var(--divider);vertical-align:top}
+.edu-table tr:hover td{background:var(--offset)}
+.edu-table tr.done-row td{opacity:.5}
+.edu-table tr.done-row td:first-child::after{content:' ✓';color:var(--green);font-weight:700}
+
+/* MILESTONES */
+.timeline{position:relative;padding-left:24px;margin-bottom:24px}
+.timeline::before{content:'';position:absolute;left:8px;top:0;bottom:0;width:2px;background:var(--divider)}
+.timeline-item{position:relative;margin-bottom:20px}
+.timeline-item::before{content:'';position:absolute;left:-20px;top:4px;width:12px;height:12px;border-radius:50%;border:2px solid var(--border);background:var(--surface);transition:border-color .2s,background .2s}
+.timeline-item.done::before{background:var(--primary);border-color:var(--primary)}
+.timeline-item.active::before{background:var(--gold);border-color:var(--gold);box-shadow:0 0 0 4px var(--gold-hl)}
+.timeline-date{font-size:0.68rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px}
+.timeline-title{font-size:0.82rem;font-weight:600;color:var(--text);margin-bottom:4px}
+.timeline-desc{font-size:0.75rem;color:var(--muted);line-height:1.45}
+
+/* COMPANY OVERVIEW */
+.about-text{font-size:.82rem;line-height:1.65;color:var(--text)}
+.ref-bullets{margin:0 0 1em 1.15rem;font-size:.82rem;line-height:1.65;color:var(--text);padding:0}
+.ref-bullets li{margin-bottom:.45em}
+.ref-bullets li:last-child{margin-bottom:0}
+.ref-sub{font-size:.68rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin:18px 0 8px}
+.ref-sub:first-child{margin-top:0}
+.ref-note{font-size:.72rem;color:var(--muted);line-height:1.45;margin-bottom:14px}
+
+/* ADD / MODAL */
+.btn-add{font-size:.68rem;padding:4px 10px;border-radius:var(--r-full);background:var(--primary-hl);color:var(--primary);border:1px solid var(--border);font-weight:600;flex-shrink:0;white-space:nowrap;transition:background .15s,color .15s}
+.btn-add:hover{background:var(--primary);color:var(--inverse)}
+.section-heading .btn-add{margin-left:auto;margin-right:4px}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:200;display:none;align-items:center;justify-content:center;padding:16px}
+.modal-overlay.open{display:flex}
+.modal-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--shadow-lg);width:100%;max-width:480px;max-height:90dvh;overflow-y:auto;padding:20px}
+.modal-title{font-size:.95rem;font-weight:700;margin-bottom:4px}
+.modal-sub{font-size:.72rem;color:var(--muted);margin-bottom:16px;line-height:1.45}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:16px;padding-top:12px;border-top:1px solid var(--divider)}
+.modal-field-hint{font-size:.65rem;color:var(--muted);margin-top:2px}
+
+/* PROFILE FORM */
+.profile-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;margin-bottom:20px}
+.profile-field{display:flex;flex-direction:column;gap:4px}
+.profile-field label{font-size:.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;font-weight:600}
+.profile-field input,.profile-field textarea,.profile-field select{background:var(--offset);border:1px solid var(--border);border-radius:var(--r);padding:8px 10px;font:inherit;font-size:.82rem;color:var(--text);width:100%}
+.profile-field textarea{min-height:72px;resize:vertical}
+.profile-field.full{grid-column:1/-1}
+.profile-preview-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px}
+.profile-preview-item{background:var(--offset);border-radius:var(--r);padding:10px 12px}
+.profile-preview-item .pv-label{font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px}
+.profile-preview-item .pv-val{font-size:.82rem;font-weight:500;color:var(--text);word-break:break-word}
+.profile-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;align-items:center}
+.profile-field-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.sensitive-input-wrap{position:relative;width:100%}
+.sensitive-input-wrap.blinded input,.sensitive-input-wrap.blinded textarea{color:transparent;caret-color:transparent}
+.sensitive-input-wrap.blinded .sensitive-overlay{position:absolute;inset:0;display:flex;align-items:center;padding:8px 10px;pointer-events:none;font-size:.82rem;letter-spacing:.22em;color:var(--muted);font-weight:500;overflow:hidden;white-space:nowrap}
+.sensitive-masked{letter-spacing:.22em;color:var(--muted);font-weight:500;font-variant-numeric:tabular-nums}
+.sensitive-toggle{display:inline-flex;align-items:center;gap:6px;font-size:.72rem;padding:5px 11px;border-radius:var(--r-full);background:var(--offset);border:1px solid var(--border);color:var(--muted);font-weight:600;transition:background .15s,color .15s,border-color .15s;white-space:nowrap}
+.sensitive-toggle:hover{background:var(--dynamic);color:var(--text)}
+.sensitive-toggle.revealed{background:var(--primary-hl);color:var(--primary);border-color:var(--primary)}
+.sensitive-toggle svg{width:14px;height:14px;flex-shrink:0}
+.btn-primary{background:var(--primary);color:var(--inverse);border:none;border-radius:var(--r);padding:8px 16px;font-size:.78rem;font-weight:600;cursor:pointer;transition:background .15s}
+.btn-primary:hover{background:var(--primary-h)}
+.btn-secondary{background:var(--offset);color:var(--text);border:1px solid var(--border);border-radius:var(--r);padding:8px 16px;font-size:.78rem;font-weight:500;cursor:pointer}
+
+
+/* MOBILE-FIRST (SBCC) */
+body.sbcc-mobile{display:block;min-height:100dvh;padding-bottom:calc(64px + env(safe-area-inset-bottom,0px))}
+body.sbcc-mobile .sidebar{display:none}
+body.sbcc-mobile .main{min-height:100dvh;width:100%}
+body.sbcc-mobile .topbar{padding:12px 16px;padding-top:calc(12px + env(safe-area-inset-top,0px));flex-wrap:wrap;gap:8px}
+body.sbcc-mobile .topbar .status-pills .pill{display:none}
+body.sbcc-mobile .topbar .status-pills{gap:6px;margin-left:auto}
+body.sbcc-mobile .view{padding:16px;padding-bottom:24px}
+body.sbcc-mobile .stat-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+body.sbcc-mobile .stat-value{font-size:1.25rem}
+body.sbcc-mobile .link-grid{grid-template-columns:1fr}
+body.sbcc-mobile .profile-grid{grid-template-columns:1fr}
+body.sbcc-mobile .section-heading{font-size:.85rem;margin:22px 0 10px;flex-wrap:wrap}
+body.sbcc-mobile .btn-add,.body.sbcc-mobile .btn-secondary,.body.sbcc-mobile .btn-primary{min-height:40px;font-size:.8rem}
+body.sbcc-mobile .task-item{padding:10px 12px}
+body.sbcc-mobile .cal-day{min-height:52px}
+body.sbcc-mobile .edu-table{display:block;overflow-x:auto;-webkit-overflow-scrolling:touch}
+body.sbcc-mobile .modal-box{max-height:85dvh;border-radius:var(--r-lg) var(--r-lg) 0 0;margin-top:auto;align-self:flex-end}
+body.sbcc-mobile .modal-overlay{align-items:flex-end;padding:0}
+.mobile-bottom-nav{position:fixed;left:0;right:0;bottom:0;z-index:150;display:flex;background:var(--surface);border-top:1px solid var(--border);padding-bottom:env(safe-area-inset-bottom,0px);box-shadow:0 -4px 16px rgba(0,0,0,.15)}
+.mobile-nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:8px 4px 10px;font-size:.58rem;color:var(--muted);min-height:56px;border-left:1px solid var(--divider)}
+.mobile-nav-btn:first-child{border-left:none}
+.mobile-nav-btn .nav-dot{width:7px;height:7px}
+.mobile-nav-btn.active{color:var(--primary);background:var(--primary-hl);font-weight:600}
+.mobile-nav-more{position:relative}
+.mobile-more-sheet{position:fixed;inset:0;z-index:160;background:rgba(0,0,0,.5);display:none;align-items:flex-end}
+.mobile-more-sheet.open{display:flex}
+.mobile-more-panel{width:100%;background:var(--surface);border-top:1px solid var(--border);border-radius:var(--r-lg) var(--r-lg) 0 0;padding:16px;padding-bottom:calc(16px + env(safe-area-inset-bottom,0px));max-height:70dvh;overflow-y:auto}
+.mobile-more-panel h3{font-size:.85rem;margin-bottom:12px}
+.mobile-more-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.mobile-more-grid button{display:flex;align-items:center;gap:8px;padding:12px;background:var(--offset);border:1px solid var(--border);border-radius:var(--r);font-size:.78rem;text-align:left}
+
+/* DESKTOP FALLBACK */
+@media(max-width:768px){
+  .sidebar{width:60px}
+  .sidebar-logo .brand,.sidebar-logo .sub,.nav-item span,.nav-badge,.sidebar-footer .progress-label,.sidebar-footer .progress-val{display:none}
+  .nav-item{justify-content:center;padding:10px}
+  .nav-dot{width:10px;height:10px}
+  .topbar h1{font-size:0.85rem}
+  .stat-grid{grid-template-columns:repeat(2,1fr)}
+}
+</style>
+</head>
+<body class="sbcc-mobile">
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="brand">Your Business</div>
+    <div class="sub">SBCC Template</div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section">Views</div>
+    <button class="nav-item active" onclick="switchView('dashboard')">
+      <span class="nav-dot" style="background:var(--primary)"></span>
+      <span>Dashboard</span>
+    </button>
+    <button class="nav-item" onclick="switchView('calendar')">
+      <span class="nav-dot" style="background:var(--gold)"></span>
+      <span>Calendar</span>
+    </button>
+    <button class="nav-item" onclick="switchView('profile')">
+      <span class="nav-dot" style="background:var(--blue)"></span>
+      <span>App Profile</span>
+    </button>
+    <button class="nav-item" onclick="switchView('narrative')">
+      <span class="nav-dot" style="background:var(--primary)"></span>
+      <span>Grant Copy</span>
+    </button>
+    <button class="nav-item" onclick="switchView('grants')">
+      <span class="nav-dot" style="background:var(--green)"></span>
+      <span>Grants</span>
+      
+    </button>
+    <button class="nav-item" onclick="switchView('checklist')">
+      <span class="nav-dot" style="background:var(--orange)"></span>
+      <span>Checklist</span>
+    </button>
+    <button class="nav-item" onclick="switchView('education')">
+      <span class="nav-dot" style="background:var(--blue)"></span>
+      <span>Education</span>
+    </button>
+    <button class="nav-item" onclick="switchView('milestones')">
+      <span class="nav-dot" style="background:var(--purple)"></span>
+      <span>Milestones</span>
+    </button>
+  </nav>
+  <div class="sidebar-footer">
+    <div>
+      <div class="progress-label">Overall Progress</div>
+      <div class="progress-val" id="overall-pct">0%</div>
+      <div class="progress-bar-wrap" style="width:80px">
+        <div class="progress-bar-fill" id="overall-bar" style="width:0%"></div>
+      </div>
+    </div>
+    <button class="theme-btn" data-theme-toggle onclick="toggleTheme()" aria-label="Toggle theme" title="Toggle light/dark">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    </button>
+  </div>
+</aside>
+
+<!-- MAIN CONTENT -->
+<main class="main">
+  <div class="topbar">
+    <h1 id="view-title">Dashboard</h1>
+    <button class="theme-btn" type="button" onclick="toggleTheme()" aria-label="Toggle theme" title="Toggle theme" style="margin-left:auto"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></button>
+    <div class="status-pills" style="align-items:center">
+      <button type="button" class="sensitive-toggle" id="global-sensitive-toggle" onclick="toggleSensitiveBlinded()" title="Show or hide sensitive profile fields">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        <span id="sensitive-toggle-label">Sensitive hidden</span>
+      </button>
+      <span class="pill pill-primary">💰 Small Business Command Center</span>
+      <span class="pill pill-red">🔴 Priority Actions</span>
+    </div>
+  </div>
+
+  <!-- DASHBOARD VIEW -->
+  <div class="view active" id="view-dashboard">
+    <div class="stat-grid">
+      <div class="stat-card">
+        <div class="stat-label">Current Revenue</div>
+        <div class="stat-value" style="color:var(--primary)">—</div>
+        <div class="stat-sub">Set in App Profile</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Year Target</div>
+        <div class="stat-value" style="color:var(--gold)">—</div>
+        <div class="stat-sub">Year target</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Grants Available</div>
+        <div class="stat-value" style="color:var(--green)">—</div>
+        <div class="stat-sub">Grants tracked</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Tasks Complete</div>
+        <div class="stat-value" id="stat-done">0</div>
+        <div class="stat-sub" id="stat-sub">of 0 total tasks</div>
+      </div>
+    </div>
+
+    <div class="section-heading" data-add="task" data-add-ctx='{"group":"urgent"}'>🔴 Do These Right Now</div>
+    <div id="urgent-list"></div>
+
+    <div class="section-heading" data-add="task" data-add-ctx='{"group":"month"}'>📅 This Month</div>
+    <div id="month-list"></div>
+
+    <div class="section-heading" data-add="revenue-anchor">💰 Revenue Anchors</div>
+    <div class="card">
+      <div style="display:grid;gap:8px" id="revenue-anchors-list"></div>
+    </div>
+  </div>
+
+  <!-- GRANT NARRATIVE VIEW -->
+  <div class="view" id="view-narrative">
+    <div class="section-heading" style="margin-top:0">📋 Application Profile Preview</div>
+    <div class="card" style="margin-bottom:24px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;gap:8px;flex-wrap:wrap">
+        <div class="card-title" style="margin:0">Grant Sign-Up Fields</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <button type="button" class="sensitive-toggle" onclick="toggleSensitiveBlinded()" title="Show or hide sensitive fields">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            <span class="sensitive-toggle-label">Sensitive hidden</span>
+          </button>
+          <button class="btn-secondary" onclick="switchView('profile')" style="font-size:.72rem">Edit Full Profile →</button>
+        </div>
+      </div>
+      <div class="profile-preview-grid" id="profile-preview-narrative"></div>
+    </div>
+
+    <div class="section-heading">Grant Narrative — Copy for Applications</div>
+    <div style="margin-bottom:16px;padding:10px 14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);font-size:.75rem;color:var(--muted);line-height:1.45;display:flex;flex-wrap:wrap;align-items:center;gap:8px;justify-content:space-between">
+      <span>Answers below match <a href="https://helloskip.com/dashboard/workspace/vault" target="_blank" rel="noopener noreferrer" style="color:var(--primary)">Skip business vault</a> questions on <strong>helloskip.com</strong>. Use <strong>Copy for Grant Apps →</strong> when filling Skip or other grant forms.</span>
+      <span style="display:flex;gap:6px;flex-shrink:0">
+        <button type="button" class="btn-add" onclick="openAddModal('narrative-single')">+ Single</button>
+        <button type="button" class="btn-add" onclick="openAddModal('narrative-multi')">+ Multi</button>
+        <button type="button" class="btn-add" onclick="openAddModal('grant-use-of-funds')">+ Grant $</button>
+      </span>
+    </div>
+
+    <div class="section-heading" data-add="narrative-single">What does Pombomb Media Do?</div>
+    <div class="card" style="margin-bottom:24px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div class="card-title" style="margin:0">Company Overview</div>
+        <button type="button" class="btn-secondary" onclick="copyWhatWeDo()" style="font-size:.72rem">Copy for Grant Apps →</button>
+        <span id="what-we-do-copy-msg" style="font-size:.75rem;color:var(--green);margin-left:8px"></span>
+      </div>
+      <p class="about-text" id="what-we-do-text"></p>
+    </div>
+
+    <div class="section-heading" data-add="narrative-multi">Why did you start Pombomb Media?</div>
+    <div class="card" style="margin-bottom:24px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div class="card-title" style="margin:0">Origin Story</div>
+        <button type="button" class="btn-secondary" onclick="copyWhyWeStarted()" style="font-size:.72rem">Copy for Grant Apps →</button>
+        <span id="why-we-started-copy-msg" style="font-size:.75rem;color:var(--green);margin-left:8px"></span>
+      </div>
+      <div class="about-text" id="why-we-started-text"></div>
+    </div>
+
+    <div class="section-heading" data-add="narrative-multi">What community issues does your business address?</div>
+    <div class="card" style="margin-bottom:24px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div class="card-title" style="margin:0">Community Impact</div>
+        <button type="button" class="btn-secondary" onclick="copyCommunityIssues()" style="font-size:.72rem">Copy for Grant Apps →</button>
+        <span id="community-issues-copy-msg" style="font-size:.75rem;color:var(--green);margin-left:8px"></span>
+      </div>
+      <div class="about-text" id="community-issues-text"></div>
+    </div>
+
+    <div class="section-heading" data-add="narrative-short-long">How We've Helped the Community</div>
+    <div class="card" style="margin-bottom:24px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div class="card-title" style="margin:0">SHORT</div>
+        <button type="button" class="btn-secondary" onclick="copyCommunityHelpShort()" style="font-size:.72rem">Copy for Grant Apps →</button>
+        <span id="community-help-short-copy-msg" style="font-size:.75rem;color:var(--green);margin-left:8px"></span>
+      </div>
+      <p class="about-text" id="community-help-short-text"></p>
+    </div>
+    <div class="card" style="margin-bottom:24px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div class="card-title" style="margin:0">LONG</div>
+        <button type="button" class="btn-secondary" onclick="copyCommunityHelpLong()" style="font-size:.72rem">Copy for Grant Apps →</button>
+        <span id="community-help-long-copy-msg" style="font-size:.75rem;color:var(--green);margin-left:8px"></span>
+      </div>
+      <div class="about-text" id="community-help-long-text"></div>
+    </div>
+
+    <div class="section-heading" data-add="narrative-single">How do you help customers with your product or service?</div>
+    <div class="card" style="margin-bottom:24px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div class="card-title" style="margin:0">Customer Service</div>
+        <button type="button" class="btn-secondary" onclick="copyCustomerHelp()" style="font-size:.72rem">Copy for Grant Apps →</button>
+        <span id="customer-help-copy-msg" style="font-size:.75rem;color:var(--green);margin-left:8px"></span>
+      </div>
+      <div class="about-text" id="customer-help-text"></div>
+    </div>
+
+    <div class="section-heading" data-add="narrative-single">What is Pombomb Media's mission?</div>
+    <div class="card" style="margin-bottom:24px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div class="card-title" style="margin:0">Mission</div>
+        <button type="button" class="btn-secondary" onclick="copyMission()" style="font-size:.72rem">Copy for Grant Apps →</button>
+        <span id="mission-copy-msg" style="font-size:.75rem;color:var(--green);margin-left:8px"></span>
+      </div>
+      <div class="about-text" id="mission-text"></div>
+    </div>
+
+    <div class="section-heading" data-add="narrative-single">How would grant money help your business?</div>
+    <div class="card" style="margin-bottom:24px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div class="card-title" style="margin:0">Grant Impact</div>
+        <button type="button" class="btn-secondary" onclick="copyGrantImpact()" style="font-size:.72rem">Copy for Grant Apps →</button>
+        <span id="grant-impact-copy-msg" style="font-size:.75rem;color:var(--green);margin-left:8px"></span>
+      </div>
+      <div class="about-text" id="grant-impact-text"></div>
+    </div>
+
+    <div class="section-heading" data-add="grant-use-of-funds">$10K Grant — Use of Funds</div>
+    <div class="card" style="margin-bottom:24px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+        <div class="card-title" style="margin:0">$10,000 · 1,000 Character Limit</div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span id="grant-10k-char-count" style="font-size:.72rem;color:var(--muted)"></span>
+          <button type="button" class="btn-secondary" onclick="copyGrant10k()" style="font-size:.72rem">Copy for Grant Apps →</button>
+          <span id="grant-10k-copy-msg" style="font-size:.75rem;color:var(--green)"></span>
+        </div>
+      </div>
+      <p class="about-text" id="grant-10k-text"></p>
+    </div>
+
+    <div class="section-heading" data-add="narrative-single">Who are your customers and how does your business uniquely meet their needs?</div>
+    <div class="card" style="margin-bottom:24px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div class="card-title" style="margin:0">Our Customers</div>
+        <button type="button" class="btn-secondary" onclick="copyCustomers()" style="font-size:.72rem">Copy for Grant Apps →</button>
+        <span id="customers-copy-msg" style="font-size:.75rem;color:var(--green);margin-left:8px"></span>
+      </div>
+      <div class="about-text" id="customers-text"></div>
+    </div>
+
+    <div class="section-heading" data-add="narrative-single">What is your proudest accomplishment?</div>
+    <div class="card" style="margin-bottom:24px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div class="card-title" style="margin:0">Proudest Moment</div>
+        <button type="button" class="btn-secondary" onclick="copyProudMoment()" style="font-size:.72rem">Copy for Grant Apps →</button>
+        <span id="proud-moment-copy-msg" style="font-size:.75rem;color:var(--green);margin-left:8px"></span>
+      </div>
+      <div class="about-text" id="proud-moment-text"></div>
+    </div>
+
+    <div class="section-heading" data-add="narrative-single">What is your biggest obstacle to growth and what will you do about it?</div>
+    <div class="card" style="margin-bottom:24px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div class="card-title" style="margin:0">Biggest Obstacle</div>
+        <button type="button" class="btn-secondary" onclick="copyBiggestObstacle()" style="font-size:.72rem">Copy for Grant Apps →</button>
+        <span id="biggest-obstacle-copy-msg" style="font-size:.75rem;color:var(--green);margin-left:8px"></span>
+      </div>
+      <div class="about-text" id="biggest-obstacle-text"></div>
+    </div>
+
+    <div class="section-heading" data-add="narrative-single">What are your goals for 2026?</div>
+    <div class="card" style="margin-bottom:24px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div class="card-title" style="margin:0">2026 Goals</div>
+        <button type="button" class="btn-secondary" onclick="copy2026Goals()" style="font-size:.72rem">Copy for Grant Apps →</button>
+        <span id="goals-2026-copy-msg" style="font-size:.75rem;color:var(--green);margin-left:8px"></span>
+      </div>
+      <div class="about-text" id="goals-2026-text"></div>
+    </div>
+
+    <div class="section-heading" data-add="narrative-single">Thoughts/Comments</div>
+    <div class="card" style="margin-bottom:24px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div class="card-title" style="margin:0">Thoughts/Comments</div>
+        <button type="button" class="btn-secondary" onclick="copyThoughtsComments()" style="font-size:.72rem">Copy for Grant Apps →</button>
+        <span id="thoughts-comments-copy-msg" style="font-size:.75rem;color:var(--green);margin-left:8px"></span>
+      </div>
+      <p class="about-text" id="thoughts-comments-text"></p>
+    </div>
+
+    <div id="grant-copy-custom"></div>
+
+    <div class="section-heading" data-add="community-bullet">Community Involvement — Reference Notes</div>
+    <div class="card" style="margin-bottom:24px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div class="card-title" style="margin:0">Synthesis Bullets</div>
+        <button type="button" class="btn-secondary" onclick="copyCommunityInvolvement()" style="font-size:.72rem">Copy All Bullets →</button>
+        <span id="community-involvement-copy-msg" style="font-size:.75rem;color:var(--green);margin-left:8px"></span>
+      </div>
+      <p class="ref-note">Public facts (Perplexity / official sources) plus Pombomb Media notes for grant synthesis. Edit the <code style="font-size:.68rem">COMMUNITY_INVOLVEMENT_* (or sbcc_custom_bullets)</code> arrays in this file as details change.</p>
+      <div id="community-involvement-content"></div>
+    </div>
+  </div>
+
+  <!-- PROFILE VIEW -->
+  <div class="view" id="view-profile">
+    <div style="margin-bottom:16px;padding:12px 14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);font-size:.78rem;color:var(--muted);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+      <span>Fill once, copy everywhere. Saved locally in your browser (localStorage <code style="font-size:.7rem">sbcc_profile</code>). Defaults pre-filled for Pombomb Media on first load.</span>
+      <button type="button" class="btn-add" onclick="openAddModal('profile-field')">+ Add Field</button>
+    </div>
+    <form id="profile-form" onsubmit="event.preventDefault();saveProfile();">
+      <div class="profile-grid" id="profile-fields"></div>
+      <div class="profile-actions">
+        <button type="submit" class="btn-primary">Save Profile</button>
+        <button type="button" class="btn-secondary" onclick="copyProfile()">Copy All to Clipboard</button>
+        <button type="button" class="sensitive-toggle" onclick="toggleSensitiveBlinded()" title="Show or hide EIN, phone, address, and other sensitive fields">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          <span class="sensitive-toggle-label">Sensitive hidden</span>
+        </button>
+        <span id="profile-save-msg" style="font-size:.75rem;color:var(--green);align-self:center"></span>
+      </div>
+    </form>
+  </div>
+
+  <!-- CALENDAR VIEW -->
+  <div class="view" id="view-calendar">
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div>Urgent/Deadline</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--orange)"></div>Action Item</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div>Grant Deadline</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--blue)"></div>Event/Gig</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--gold)"></div>Education</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--purple)"></div>Milestone</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--primary)"></div>Business Task</div>
+      <button type="button" class="btn-add" style="margin-left:auto" onclick="openAddModal('calendar-event')">+ Add Event</button>
+    </div>
+    <div class="calendar-wrap" id="calendar-container"></div>
+  </div>
+
+  <!-- GRANTS VIEW -->
+  <div class="view" id="view-grants">
+    <div class="section-heading" style="margin-top:0" data-add="grant-card" data-add-ctx='{"section":"platforms"}'>📍 Grant Platforms</div>
+    <div style="margin-bottom:12px;padding:10px 14px;background:var(--orange-hl);border:1px solid var(--border);border-radius:var(--r-lg);font-size:.75rem;color:var(--orange);line-height:1.45">
+      Blank SBCC template — use <strong>+ Add</strong> on each section to populate grants, tasks, and copy. Data saves in this browser via localStorage (<code style="font-size:.68rem">sbcc_*</code>).
+    </div>
+    <div class="link-grid" id="grants-platforms"></div>
+    <div class="section-heading" data-add="grant-card" data-add-ctx='{"section":"urgent"}'>🔴 Apply Now — Open Grants</div>
+    <div class="link-grid" id="grants-urgent"></div>
+    <div class="section-heading" data-add="grant-card" data-add-ctx='{"section":"monitor"}'>🟡 Monitor — Check Back</div>
+    <div class="link-grid" id="grants-monitor"></div>
+    <div class="section-heading" data-add="grant-card" data-add-ctx='{"section":"hold"}'>🟠 On Hold</div>
+    <div class="link-grid" id="grants-hold"></div>
+    <div class="section-heading" data-add="grant-card" data-add-ctx='{"section":"closed"}'>⚫ Closed</div>
+    <div class="link-grid" id="grants-closed"></div>
+    <div class="section-heading" data-add="grant-card" data-add-ctx='{"section":"june"}'>🟢 Apply June–July 2026</div>
+    <div class="link-grid" id="grants-june"></div>
+    <div class="section-heading" data-add="grant-card" data-add-ctx='{"section":"equipment"}'>🎥 Equipment Funding — Grants.gov Research (May 2026)</div>
+    <div style="margin-bottom:12px;padding:10px 14px;background:var(--orange-hl);border:1px solid var(--border);border-radius:var(--r-lg);font-size:.75rem;color:var(--orange);line-height:1.45">
+      SBA confirms: <strong>no federal grants to start or expand a for-profit business.</strong> Grants.gov has 600+ “equipment” hits — almost all are research, embassies, or training-provider grants. Best equipment money: private grants below + SBA Microloan.
+    </div>
+    <div class="link-grid" id="grants-equipment"></div>
+    <div class="section-heading" data-add="grant-card" data-add-ctx='{"section":"federal"}'>🟡 Federal / National (Longer Process)</div>
+    <div class="link-grid" id="grants-federal"></div>
+    <div class="section-heading" data-add="grant-card" data-add-ctx='{"section":"tech"}'>🟣 AI / Tech Grants (For Software Products)</div>
+    <div class="link-grid" id="grants-tech"></div>
+  </div>
+
+  <!-- CHECKLIST VIEW -->
+  <div class="view" id="view-checklist">
+    <div style="margin-bottom:16px;display:flex;justify-content:flex-end">
+      <button type="button" class="btn-add" onclick="openAddModal('task')">+ Add Task</button>
+    </div>
+    <div id="checklist-container"></div>
+  </div>
+
+  <!-- EDUCATION VIEW -->
+  <div class="view" id="view-education">
+    <div style="margin-bottom:16px;padding:12px 14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);font-size:.78rem;color:var(--muted);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+      <span>All courses are free with certificates unless noted. Mark weeks complete as you finish them.</span>
+      <button type="button" class="btn-add" onclick="openAddModal('edu-course')">+ Add Course</button>
+    </div>
+    <table class="edu-table" id="edu-table"></table>
+  </div>
+
+  <!-- MILESTONES VIEW -->
+  <div class="view" id="view-milestones">
+    <div class="section-heading" style="margin-top:0" data-add="milestone">12-Month Revenue Roadmap</div>
+    <div class="card" style="margin-bottom:20px">
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;text-align:center">
+        <div style="padding:10px;background:var(--offset);border-radius:var(--r)">
+          <div style="font-size:.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px">Conservative</div>
+          <div style="font-size:1.1rem;font-weight:700;color:var(--primary)">—</div>
+          <div style="font-size:.68rem;color:var(--muted)">+1 new client</div>
+        </div>
+        <div style="padding:10px;background:var(--gold-hl);border-radius:var(--r)">
+          <div style="font-size:.68rem;color:var(--gold);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px">Realistic ⭐</div>
+          <div style="font-size:1.1rem;font-weight:700;color:var(--gold)">—</div>
+          <div style="font-size:.68rem;color:var(--muted)">Equipment + MBE + Loot Nanny</div>
+        </div>
+        <div style="padding:10px;background:var(--offset);border-radius:var(--r)">
+          <div style="font-size:.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px">Aggressive</div>
+          <div style="font-size:1.1rem;font-weight:700;color:var(--purple)">—</div>
+          <div style="font-size:.68rem;color:var(--muted)">Fortune 500 or music festival deal</div>
+        </div>
+      </div>
+    </div>
+    <div class="timeline" id="milestones-timeline"></div>
+  </div>
+
+</main>
+
+<nav class="mobile-bottom-nav" aria-label="Main navigation">
+  <button type="button" class="mobile-nav-btn active" data-mobile-view="dashboard" onclick="mobileSwitchView('dashboard')">
+    <span class="nav-dot" style="background:var(--primary)"></span>Home
+  </button>
+  <button type="button" class="mobile-nav-btn" data-mobile-view="narrative" onclick="mobileSwitchView('narrative')">
+    <span class="nav-dot" style="background:var(--primary)"></span>Copy
+  </button>
+  <button type="button" class="mobile-nav-btn" data-mobile-view="grants" onclick="mobileSwitchView('grants')">
+    <span class="nav-dot" style="background:var(--green)"></span>Grants
+  </button>
+  <button type="button" class="mobile-nav-btn" data-mobile-view="checklist" onclick="mobileSwitchView('checklist')">
+    <span class="nav-dot" style="background:var(--orange)"></span>Tasks
+  </button>
+  <button type="button" class="mobile-nav-btn mobile-nav-more" onclick="toggleMobileMore()">
+    <span class="nav-dot" style="background:var(--purple)"></span>More
+  </button>
+</nav>
+<div class="mobile-more-sheet" id="mobile-more-sheet" onclick="if(event.target===this)toggleMobileMore(false)">
+  <div class="mobile-more-panel">
+    <h3>More views</h3>
+    <div class="mobile-more-grid">
+      <button type="button" onclick="mobileSwitchView('calendar');toggleMobileMore(false)"><span class="nav-dot" style="background:var(--gold)"></span>Calendar</button>
+      <button type="button" onclick="mobileSwitchView('profile');toggleMobileMore(false)"><span class="nav-dot" style="background:var(--blue)"></span>App Profile</button>
+      <button type="button" onclick="mobileSwitchView('education');toggleMobileMore(false)"><span class="nav-dot" style="background:var(--blue)"></span>Education</button>
+      <button type="button" onclick="mobileSwitchView('milestones');toggleMobileMore(false)"><span class="nav-dot" style="background:var(--purple)"></span>Milestones</button>
+    </div>
+  </div>
+</div>
+
+
+<div class="modal-overlay" id="add-modal-overlay" onclick="if(event.target===this)closeAddModal()">
+  <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="add-modal-title">
+    <div class="modal-title" id="add-modal-title">Add Item</div>
+    <div class="modal-sub" id="add-modal-sub"></div>
+    <form id="add-modal-form" onsubmit="submitAddModal(event)"></form>
+    <div class="modal-actions">
+      <button type="button" class="btn-secondary" onclick="closeAddModal()">Cancel</button>
+      <button type="submit" form="add-modal-form" class="btn-primary">Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// DATA
+// ============================================================
+const TASKS = [];
+
+// ============================================================
+// COMPANY OVERVIEW
+// ============================================================
+const POMBOMB_WHAT_WE_DO = '';
+
+function renderWhatWeDo(){
+  const el=document.getElementById('what-we-do-text');
+  if(el)el.textContent=POMBOMB_WHAT_WE_DO;
+}
+
+function copyWhatWeDo(){
+  navigator.clipboard.writeText(POMBOMB_WHAT_WE_DO).then(()=>{
+    const msg=document.getElementById('what-we-do-copy-msg');
+    if(msg){msg.textContent='Copied ✓';setTimeout(()=>msg.textContent='',2500)}
+  }).catch(()=>{});
+}
+
+const POMBOMB_WHY_WE_STARTED = '';
+
+function renderAboutParagraphs(containerId,text){
+  const el=document.getElementById(containerId);
+  if(!el)return;
+  const parts=text.split('\n\n');
+  el.innerHTML=parts.map(p=>`<p style="margin:0 0 1em 0">${p.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</p>`).join('');
+  const ps=el.querySelectorAll('p');
+  if(ps.length)ps[ps.length-1].style.marginBottom='0';
+}
+
+function renderWhyWeStarted(){
+  renderAboutParagraphs('why-we-started-text',POMBOMB_WHY_WE_STARTED);
+}
+
+function copyWhyWeStarted(){
+  navigator.clipboard.writeText(POMBOMB_WHY_WE_STARTED).then(()=>{
+    const msg=document.getElementById('why-we-started-copy-msg');
+    if(msg){msg.textContent='Copied ✓';setTimeout(()=>msg.textContent='',2500)}
+  }).catch(()=>{});
+}
+
+const POMBOMB_COMMUNITY_ISSUES = '';
+
+function renderCommunityIssues(){
+  renderAboutParagraphs('community-issues-text',POMBOMB_COMMUNITY_ISSUES);
+}
+
+function copyCommunityIssues(){
+  navigator.clipboard.writeText(POMBOMB_COMMUNITY_ISSUES).then(()=>{
+    const msg=document.getElementById('community-issues-copy-msg');
+    if(msg){msg.textContent='Copied ✓';setTimeout(()=>msg.textContent='',2500)}
+  }).catch(()=>{});
+}
+
+const POMBOMB_COMMUNITY_HELP_SHORT = '';
+
+const POMBOMB_COMMUNITY_HELP_LONG = '';
+
+function renderCommunityHelpShort(){
+  const el=document.getElementById('community-help-short-text');
+  if(el)el.textContent=POMBOMB_COMMUNITY_HELP_SHORT;
+}
+
+function copyCommunityHelpShort(){
+  navigator.clipboard.writeText(POMBOMB_COMMUNITY_HELP_SHORT).then(()=>{
+    const msg=document.getElementById('community-help-short-copy-msg');
+    if(msg){msg.textContent='Copied ✓';setTimeout(()=>msg.textContent='',2500)}
+  }).catch(()=>{});
+}
+
+function renderCommunityHelpLong(){
+  renderAboutParagraphs('community-help-long-text',POMBOMB_COMMUNITY_HELP_LONG);
+}
+
+function copyCommunityHelpLong(){
+  navigator.clipboard.writeText(POMBOMB_COMMUNITY_HELP_LONG).then(()=>{
+    const msg=document.getElementById('community-help-long-copy-msg');
+    if(msg){msg.textContent='Copied ✓';setTimeout(()=>msg.textContent='',2500)}
+  }).catch(()=>{});
+}
+
+// ============================================================
+// COMMUNITY INVOLVEMENT — REFERENCE BULLETS (edit as needed)
+// ============================================================
+const COMMUNITY_INVOLVEMENT_OLM_PUBLIC = [];
+
+const COMMUNITY_INVOLVEMENT_OLM_POMBOMB = [];
+
+const COMMUNITY_INVOLVEMENT_COLORPALOOZA_PUBLIC = [];
+
+const COMMUNITY_INVOLVEMENT_COLORPALOOZA_POMBOMB = [];
+
+function renderBulletSection(title,items){
+  if(!items.length)return '';
+  return `<div class="ref-sub">${title}</div><ul class="ref-bullets">${items.map(b=>`<li>${b.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</li>`).join('')}</ul>`;
+}
+
+function formatCommunityInvolvementCopy(){
+  const bullets=getCommunityBulletStore();
+  const blocks=[
+    ['OUR LITTLE MISS BEAUTY PAGEANT — Public reference',bullets.olm_public],
+    ['Our Little Miss — Pombomb Media role',bullets.olm_pombomb],
+    ['COLORPALOOZA · CITY OF LEWISVILLE — Public reference',bullets.colorpalooza_public],
+    ['ColorPalooza — Pombomb Media role',bullets.colorpalooza_pombomb],
+  ];
+  let out=blocks.map(([heading,items])=>heading+'\n'+items.map(b=>'• '+b).join('\n')).join('\n\n');
+  bullets.custom_topics.forEach(t=>{
+    if(t.public?.length)out+='\n\n'+t.title+' — '+(t.subPublic||'Notes')+'\n'+t.public.map(b=>'• '+b).join('\n');
+    if(t.pombomb?.length)out+='\n\n'+t.title+' — '+(t.subPombomb||'Pombomb role')+'\n'+t.pombomb.map(b=>'• '+b).join('\n');
+  });
+  return out;
+}
+
+function renderCommunityInvolvement(){
+  const el=document.getElementById('community-involvement-content');
+  if(!el)return;
+  const bullets=getCommunityBulletStore();
+  el.innerHTML=
+    '<div class="ref-sub" style="margin-top:0;color:var(--primary)">Our Little Miss Beauty Pageant</div>'+
+    renderBulletSection('Public reference',bullets.olm_public)+
+    renderBulletSection('Pombomb Media role (update as needed)',bullets.olm_pombomb)+
+    '<div class="ref-sub" style="color:var(--primary)">ColorPalooza · City of Lewisville</div>'+
+    renderBulletSection('Public reference',bullets.colorpalooza_public)+
+    renderBulletSection('Pombomb Media role (update as needed)',bullets.colorpalooza_pombomb)+
+    renderCustomBulletTopics(bullets.custom_topics);
+}
+
+function copyCommunityInvolvement(){
+  navigator.clipboard.writeText(formatCommunityInvolvementCopy()).then(()=>{
+    const msg=document.getElementById('community-involvement-copy-msg');
+    if(msg){msg.textContent='Copied ✓';setTimeout(()=>msg.textContent='',2500)}
+  }).catch(()=>{});
+}
+
+const POMBOMB_CUSTOMER_HELP = '';
+
+function renderCustomerHelp(){
+  const el=document.getElementById('customer-help-text');
+  if(el)el.textContent=POMBOMB_CUSTOMER_HELP;
+}
+
+function copyCustomerHelp(){
+  navigator.clipboard.writeText(POMBOMB_CUSTOMER_HELP).then(()=>{
+    const msg=document.getElementById('customer-help-copy-msg');
+    if(msg){msg.textContent='Copied ✓';setTimeout(()=>msg.textContent='',2500)}
+  }).catch(()=>{});
+}
+
+const POMBOMB_MISSION = '';
+
+function renderMission(){
+  const el=document.getElementById('mission-text');
+  if(el)el.textContent=POMBOMB_MISSION;
+}
+
+function copyMission(){
+  navigator.clipboard.writeText(POMBOMB_MISSION).then(()=>{
+    const msg=document.getElementById('mission-copy-msg');
+    if(msg){msg.textContent='Copied ✓';setTimeout(()=>msg.textContent='',2500)}
+  }).catch(()=>{});
+}
+
+const POMBOMB_GRANT_IMPACT = '';
+
+function renderGrantImpact(){
+  const el=document.getElementById('grant-impact-text');
+  if(el)el.textContent=POMBOMB_GRANT_IMPACT;
+}
+
+function copyGrantImpact(){
+  navigator.clipboard.writeText(POMBOMB_GRANT_IMPACT).then(()=>{
+    const msg=document.getElementById('grant-impact-copy-msg');
+    if(msg){msg.textContent='Copied ✓';setTimeout(()=>msg.textContent='',2500)}
+  }).catch(()=>{});
+}
+
+const POMBOMB_GRANT_10K = '';
+
+const POMBOMB_GRANT_10K_LIMIT = 1000;
+
+function renderGrant10k(){
+  const el=document.getElementById('grant-10k-text');
+  if(el)el.textContent=POMBOMB_GRANT_10K;
+  const countEl=document.getElementById('grant-10k-char-count');
+  if(countEl){
+    const n=POMBOMB_GRANT_10K.length;
+    const over=n>POMBOMB_GRANT_10K_LIMIT;
+    countEl.textContent=n+' / '+POMBOMB_GRANT_10K_LIMIT+' characters';
+    countEl.style.color=over?'var(--red)':'var(--muted)';
+  }
+}
+
+function copyGrant10k(){
+  navigator.clipboard.writeText(POMBOMB_GRANT_10K).then(()=>{
+    const msg=document.getElementById('grant-10k-copy-msg');
+    if(msg){msg.textContent='Copied ✓';setTimeout(()=>msg.textContent='',2500)}
+  }).catch(()=>{});
+}
+
+const POMBOMB_CUSTOMERS = '';
+
+function renderCustomers(){
+  const el=document.getElementById('customers-text');
+  if(el)el.textContent=POMBOMB_CUSTOMERS;
+}
+
+function copyCustomers(){
+  navigator.clipboard.writeText(POMBOMB_CUSTOMERS).then(()=>{
+    const msg=document.getElementById('customers-copy-msg');
+    if(msg){msg.textContent='Copied ✓';setTimeout(()=>msg.textContent='',2500)}
+  }).catch(()=>{});
+}
+
+const POMBOMB_PROUD_MOMENT = '';
+
+function renderProudMoment(){
+  const el=document.getElementById('proud-moment-text');
+  if(el)el.textContent=POMBOMB_PROUD_MOMENT;
+}
+
+function copyProudMoment(){
+  navigator.clipboard.writeText(POMBOMB_PROUD_MOMENT).then(()=>{
+    const msg=document.getElementById('proud-moment-copy-msg');
+    if(msg){msg.textContent='Copied ✓';setTimeout(()=>msg.textContent='',2500)}
+  }).catch(()=>{});
+}
+
+const POMBOMB_BIGGEST_OBSTACLE = '';
+
+function renderBiggestObstacle(){
+  const el=document.getElementById('biggest-obstacle-text');
+  if(el)el.textContent=POMBOMB_BIGGEST_OBSTACLE;
+}
+
+function copyBiggestObstacle(){
+  navigator.clipboard.writeText(POMBOMB_BIGGEST_OBSTACLE).then(()=>{
+    const msg=document.getElementById('biggest-obstacle-copy-msg');
+    if(msg){msg.textContent='Copied ✓';setTimeout(()=>msg.textContent='',2500)}
+  }).catch(()=>{});
+}
+
+const POMBOMB_2026_GOALS = '';
+
+function render2026Goals(){
+  const el=document.getElementById('goals-2026-text');
+  if(el)el.textContent=POMBOMB_2026_GOALS;
+}
+
+function copy2026Goals(){
+  navigator.clipboard.writeText(POMBOMB_2026_GOALS).then(()=>{
+    const msg=document.getElementById('goals-2026-copy-msg');
+    if(msg){msg.textContent='Copied ✓';setTimeout(()=>msg.textContent='',2500)}
+  }).catch(()=>{});
+}
+
+const POMBOMB_THOUGHTS_COMMENTS = '';
+
+function renderThoughtsComments(){
+  const el=document.getElementById('thoughts-comments-text');
+  if(el)el.textContent=POMBOMB_THOUGHTS_COMMENTS;
+}
+
+function copyThoughtsComments(){
+  navigator.clipboard.writeText(POMBOMB_THOUGHTS_COMMENTS).then(()=>{
+    const msg=document.getElementById('thoughts-comments-copy-msg');
+    if(msg){msg.textContent='Copied ✓';setTimeout(()=>msg.textContent='',2500)}
+  }).catch(()=>{});
+}
+
+// ============================================================
+// APPLICATION PROFILE
+// ============================================================
+const PROFILE_DEFAULTS = {
+  legal_name:'',
+  dba:'',
+  email:'',
+  owner_name:'',
+  birth_date:'',
+  birth_place:'',
+  parents_background:'',
+  industry:''
+};
+
+const PROFILE_FIELDS = [
+  {key:'legal_name',label:'Legal Name (Owner)',type:'text',placeholder:'Adonis Carcamo'},
+  {key:'dba',label:'DBA / Trade Name',type:'text',placeholder:'Pombomb Media'},
+  {key:'email',label:'Business Email',type:'email',placeholder:'info@pombomb.com'},
+  {key:'phone',label:'Phone',type:'tel',placeholder:'(972) XXX-XXXX',sensitive:true},
+  {key:'ein',label:'EIN',type:'text',placeholder:'XX-XXXXXXX',sensitive:true},
+  {key:'industry',label:'Industry / NAICS Description',type:'textarea',placeholder:'Event production, live streaming, and media services for Pombomb Media',full:true},
+  {key:'address',label:'Street Address',type:'text',placeholder:'',sensitive:true},
+  {key:'city',label:'City',type:'text',placeholder:'Lewisville',sensitive:true},
+  {key:'state',label:'State',type:'text',placeholder:'TX',sensitive:true},
+  {key:'zip',label:'ZIP',type:'text',placeholder:'',sensitive:true},
+  {key:'website',label:'Website',type:'url',placeholder:'https://www.pombomb.com'},
+  {key:'year_founded',label:'Year Founded',type:'text',placeholder:'2020'},
+  {key:'employees',label:'Number of Employees',type:'text',placeholder:'1'},
+  {key:'annual_revenue',label:'Annual Revenue',type:'text',placeholder:'~$20,000 (2025 actual)'},
+  {key:'owner_name',label:'Owner Full Name',type:'text',placeholder:'Adonis Carcamo',sensitive:true},
+  {key:'owner_title',label:'Owner Title',type:'text',placeholder:'Owner / Sole Proprietor'},
+  {key:'birth_date',label:'Date of Birth',type:'text',placeholder:'11/21/1984',sensitive:true},
+  {key:'birth_place',label:'Place of Birth',type:'text',placeholder:'Los Angeles, CA',sensitive:true},
+  {key:'parents_background',label:'Parents / Background',type:'textarea',placeholder:'Two immigrant parents who eventually became U.S. citizens',full:true},
+  {key:'owner_ethnicity',label:'Owner Ethnicity',type:'text',placeholder:'Salvadoran American (First-gen)',sensitive:true},
+  {key:'business_description',label:'Business Description (for grant apps)',type:'textarea',placeholder:'Pombomb Media provides event production, live streaming, and media services...',full:true},
+  {key:'social_facebook',label:'Facebook URL',type:'url',placeholder:'https://www.facebook.com/pombombmedia/'},
+  {key:'social_instagram',label:'Instagram URL',type:'url',placeholder:''},
+];
+
+const PROFILE_PREVIEW_KEYS = ['legal_name','dba','email','industry','ein'];
+
+function isSensitiveField(key){
+  const f=PROFILE_FIELDS.find(x=>x.key===key);
+  return !!(f&&f.sensitive);
+}
+
+function loadSensitiveBlinded(){
+  try{
+    const v=localStorage.getItem('sbcc_sensitive_blinded');
+    if(v===null)return true;
+    return v==='true';
+  }catch(e){return true}
+}
+
+function setSensitiveBlinded(blinded){
+  try{localStorage.setItem('sbcc_sensitive_blinded',blinded?'true':'false')}catch(e){}
+  syncSensitiveUI();
+  renderProfileForm();
+  renderProfilePreview();
+}
+
+function toggleSensitiveBlinded(){
+  setSensitiveBlinded(!loadSensitiveBlinded());
+}
+
+function maskSensitiveValue(value){
+  const raw=String(value||'').trim();
+  if(!raw)return '—';
+  const len=Math.min(Math.max(raw.replace(/\s/g,'').length,6),16);
+  return '·'.repeat(len);
+}
+
+function formatSensitiveDisplay(value,key){
+  const raw=value||'';
+  if(!isSensitiveField(key)||!loadSensitiveBlinded())return escHtml(raw||'—');
+  return `<span class="sensitive-masked">${maskSensitiveValue(raw)}</span>`;
+}
+
+function sensitiveEyeSvg(revealed){
+  if(revealed){
+    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
+  }
+  return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>';
+}
+
+function syncSensitiveUI(){
+  const revealed=!loadSensitiveBlinded();
+  const label=revealed?'Sensitive visible':'Sensitive hidden';
+  document.querySelectorAll('.sensitive-toggle').forEach(btn=>{
+    btn.classList.toggle('revealed',revealed);
+    btn.innerHTML=sensitiveEyeSvg(revealed)+`<span class="sensitive-toggle-label">${label}</span>`;
+  });
+}
+
+function loadProfile(){
+  let saved={};
+  try{saved=JSON.parse(localStorage.getItem('sbcc_profile')||'{}')}catch(e){}
+  const profile={...PROFILE_DEFAULTS,...saved};
+  if(!profile.legal_name||!String(profile.legal_name).trim())profile.legal_name='Adonis Carcamo';
+  if(!profile.dba||!String(profile.dba).trim())profile.dba='Pombomb Media';
+  if(!profile.owner_name||!String(profile.owner_name).trim())profile.owner_name='Adonis Carcamo';
+  return profile;
+}
+
+function saveProfile(){
+  const profile={};
+  PROFILE_FIELDS.forEach(f=>{
+    const el=document.getElementById('pf-'+f.key);
+    if(el)profile[f.key]=el.value;
+  });
+  try{localStorage.setItem('sbcc_profile',JSON.stringify(profile))}catch(e){}
+  const msg=document.getElementById('profile-save-msg');
+  if(msg){msg.textContent='Saved ✓';setTimeout(()=>msg.textContent='',2500)}
+  renderProfilePreview();
+}
+
+function copyProfile(){
+  const p=loadProfile();
+  const lines=PROFILE_FIELDS.map(f=>`${f.label}: ${p[f.key]||''}`).join('\n');
+  navigator.clipboard.writeText(lines).then(()=>{
+    const msg=document.getElementById('profile-save-msg');
+    if(msg){msg.textContent='Copied to clipboard ✓';setTimeout(()=>msg.textContent='',2500)}
+  }).catch(()=>{});
+}
+
+function renderProfileForm(){
+  const container=document.getElementById('profile-fields');
+  if(!container)return;
+  const profile=loadProfile();
+  const blinded=loadSensitiveBlinded();
+  container.innerHTML='';
+  PROFILE_FIELDS.forEach(f=>{
+    const wrap=document.createElement('div');
+    wrap.className='profile-field'+(f.full?' full':'');
+    const val=(profile[f.key]||'').replace(/"/g,'&quot;');
+    const sensitive=!!f.sensitive;
+    let fieldHtml='';
+    if(f.type==='textarea'){
+      fieldHtml=`<textarea id="pf-${f.key}" placeholder="${f.placeholder||''}">${profile[f.key]||''}</textarea>`;
+    }else{
+      fieldHtml=`<input id="pf-${f.key}" type="${f.type||'text'}" value="${val}" placeholder="${f.placeholder||''}">`;
+    }
+    if(sensitive&&blinded){
+      wrap.innerHTML=`<div class="profile-field-head"><label for="pf-${f.key}">${f.label}</label></div><div class="sensitive-input-wrap blinded">${fieldHtml}<div class="sensitive-overlay">${maskSensitiveValue(profile[f.key]||f.placeholder||'')}</div></div>`;
+    }else{
+      wrap.innerHTML=`<label for="pf-${f.key}">${f.label}</label>${fieldHtml}`;
+    }
+    container.appendChild(wrap);
+  });
+}
+
+function renderProfilePreview(){
+  const profile=loadProfile();
+  const labels={legal_name:'Legal Name',dba:'DBA',email:'Email',industry:'Industry',ein:'EIN'};
+  ['profile-preview-narrative'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(!el)return;
+    el.innerHTML='';
+    PROFILE_PREVIEW_KEYS.forEach(k=>{
+      const item=document.createElement('div');
+      item.className='profile-preview-item';
+      item.innerHTML=`<div class="pv-label">${labels[k]||k}</div><div class="pv-val">${formatSensitiveDisplay(profile[k],k)}</div>`;
+      el.appendChild(item);
+    });
+  });
+}
+
+const colorMap = {red:'ev-red',orange:'ev-orange',gold:'ev-gold',green:'ev-green',blue:'ev-blue',purple:'ev-purple',primary:'ev-primary'};
+const pillMap = {red:'pill-red',orange:'pill-orange',gold:'pill-gold',green:'pill-green',blue:'pill-blue',purple:'pill-purple',primary:'pill-primary'};
+const labelColorMap = {
+  red:{bg:'var(--red-hl)',color:'var(--red)'},
+  orange:{bg:'var(--orange-hl)',color:'var(--orange)'},
+  gold:{bg:'var(--gold-hl)',color:'var(--gold)'},
+  green:{bg:'var(--green-hl)',color:'var(--green)'},
+  blue:{bg:'var(--blue-hl)',color:'var(--blue)'},
+  purple:{bg:'var(--purple-hl)',color:'var(--purple)'},
+  primary:{bg:'var(--primary-hl)',color:'var(--primary)'},
+};
+
+let done = JSON.parse(localStorage.getItem('sbcc_done') || '[]');
+// fallback to in-memory if storage blocked
+let doneMem = [...done];
+
+function isDone(id){return doneMem.includes(id)}
+function toggleDone(id){
+  if(isDone(id)){doneMem=doneMem.filter(x=>x!==id)}else{doneMem.push(id)}
+  try{localStorage.setItem('sbcc_done',JSON.stringify(doneMem))}catch(e){}
+  updateStats();renderDashboardUrgent();renderDashboardMonth();renderChecklist();renderEdu();renderCalendar();
+}
+
+function updateStats(){
+  const total=TASKS.length;
+  const doneCount=TASKS.filter(t=>isDone(t.id)).length;
+  const pct=total>0?Math.round(doneCount/total*100):0;
+  document.getElementById('overall-pct').textContent=pct+'%';
+  document.getElementById('overall-bar').style.width=pct+'%';
+  document.getElementById('stat-done').textContent=doneCount;
+  document.getElementById('stat-sub').textContent='of '+total+' total tasks';
+}
+
+function renderTaskItem(t,compact=false){
+  const lc = labelColorMap[t.color]||labelColorMap.primary;
+  const dn = isDone(t.id);
+  const div = document.createElement('div');
+  div.className = 'task-item'+(dn?' done':'');
+  div.onclick = ()=>toggleDone(t.id);
+  div.innerHTML = `
+    <input type="checkbox" ${dn?'checked':''} onclick="event.stopPropagation();toggleDone('${t.id}')">
+    <div style="flex:1;min-width:0">
+      <div class="task-text">${t.text}${t.url?`<a href="${t.url}" target="_blank" rel="noopener" class="task-link" onclick="event.stopPropagation()">↗ Visit</a>`:''}</div>
+      ${!compact?`<span class="task-deadline">${t.deadline}</span>`:''}
+    </div>
+    <div class="task-meta">
+      <span class="task-label" style="background:${lc.bg};color:${lc.color}">${t.label}</span>
+    </div>
+  `;
+  return div;
+}
+
+function renderDashboardUrgent(){
+  const el = document.getElementById('urgent-list');
+  el.innerHTML='';
+  const tasks = TASKS.filter(t=>t.group==='urgent');
+  tasks.forEach(t=>el.appendChild(renderTaskItem(t)));
+}
+
+function renderDashboardMonth(){
+  const el = document.getElementById('month-list');
+  el.innerHTML='';
+  const tasks = TASKS.filter(t=>t.group==='month').slice(0,8);
+  tasks.forEach(t=>el.appendChild(renderTaskItem(t)));
+}
+
+function renderChecklist(){
+  const container = document.getElementById('checklist-container');
+  container.innerHTML='';
+  const groups = [
+    {key:'urgent',label:'🔴 Urgent — Apply This Week',color:'red'},
+    {key:'monitor',label:'🟡 Monitor — Check Back',color:'gold'},
+    {key:'hold',label:'🟠 On Hold',color:'orange'},
+    {key:'closed',label:'⚫ Closed',color:'primary'},
+    {key:'month',label:'🟠 This Month',color:'orange'},
+    {key:'june',label:'🟢 June–July 2026',color:'green'},
+    {key:'later',label:'🔵 Later / When Triggered',color:'blue'},
+  ];
+  groups.forEach(g=>{
+    const tasks = TASKS.filter(t=>t.group===g.key);
+    const doneCount = tasks.filter(t=>isDone(t.id)).length;
+    const sec = document.createElement('div');
+    sec.className='checklist-section';
+    const hdr = document.createElement('div');
+    hdr.className='checklist-header';
+    hdr.innerHTML=`<h2>${g.label}</h2><button type="button" class="btn-add" onclick="openAddModal('task',{group:'${g.key}'})">+ Add</button><span class="checklist-count">${doneCount}/${tasks.length} done</span>`;
+    const bar = document.createElement('div');
+    bar.innerHTML=`<div class="progress-bar-wrap" style="margin-bottom:8px"><div class="progress-bar-fill" style="width:${tasks.length?Math.round(doneCount/tasks.length*100):0}%;background:var(--${g.color})"></div></div>`;
+    sec.appendChild(hdr);
+    sec.appendChild(bar);
+    tasks.forEach(t=>sec.appendChild(renderTaskItem(t)));
+    container.appendChild(sec);
+  });
+}
+
+// ============================================================
+// CALENDAR DATA
+// ============================================================
+const CAL_EVENTS = {};
+
+function renderCalendar(){
+  const container = document.getElementById('calendar-container');
+  container.innerHTML='';
+  const months = [
+    {year:2026,month:3,name:'April 2026'},
+    {year:2026,month:4,name:'May 2026'},
+    {year:2026,month:5,name:'June 2026'},
+    {year:2026,month:6,name:'July 2026'},
+    {year:2026,month:7,name:'August 2026'},
+    {year:2026,month:8,name:'September 2026'},
+    {year:2026,month:9,name:'October 2026'},
+  ];
+  const today = new Date();
+  months.forEach(m=>{
+    const calDiv = document.createElement('div');
+    calDiv.className='cal-month';
+    const firstDay = new Date(m.year,m.month,1);
+    const lastDay = new Date(m.year,m.month+1,0).getDate();
+    const startDow = firstDay.getDay();
+    // count events
+    let evCount=0;
+    for(let d=1;d<=lastDay;d++){
+      const key=`${m.year}-${String(m.month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+      if(CAL_EVENTS[key])evCount+=CAL_EVENTS[key].length;
+    }
+    calDiv.innerHTML=`<div class="cal-month-header">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+      ${m.name} <span style="font-size:.68rem;color:var(--muted);font-family:'Inter',sans-serif;font-weight:400;margin-left:auto">${evCount} events</span>
+    </div>`;
+    const grid = document.createElement('div');
+    grid.className='cal-grid';
+    ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach(d=>{
+      const lbl=document.createElement('div');
+      lbl.className='cal-day-label';lbl.textContent=d;
+      grid.appendChild(lbl);
+    });
+    // empty cells
+    for(let i=0;i<startDow;i++){
+      const empty=document.createElement('div');
+      empty.className='cal-day empty';
+      grid.appendChild(empty);
+    }
+    for(let d=1;d<=lastDay;d++){
+      const key=`${m.year}-${String(m.month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+      const cell=document.createElement('div');
+      const isToday=(today.getFullYear()===m.year&&today.getMonth()===m.month&&today.getDate()===d);
+      cell.className='cal-day'+(isToday?' today':'');
+      const dateSpan=document.createElement('span');
+      dateSpan.className='cal-date';dateSpan.textContent=d;
+      cell.appendChild(dateSpan);
+      if(CAL_EVENTS[key]){
+        CAL_EVENTS[key].forEach(ev=>{
+          const evEl=document.createElement('div');
+          evEl.className='cal-event '+colorMap[ev.color];
+          evEl.textContent=ev.text;
+          evEl.title=ev.text;
+          if(ev.url){evEl.style.cursor='pointer';evEl.onclick=(e)=>{e.stopPropagation();window.open(ev.url,'_blank')}}
+          cell.appendChild(evEl);
+        });
+      }
+      grid.appendChild(cell);
+    }
+    calDiv.appendChild(grid);
+    container.appendChild(calDiv);
+  });
+}
+
+// ============================================================
+// GRANTS
+// ============================================================
+const GRANTS = {
+  platforms:[],
+  urgent:[],
+  monitor:[],
+  hold:[],
+  closed:[],
+  june:[],
+  federal:[],
+  tech:[],
+  equipment:[],
+};
+
+function renderGrants(){
+  const sections = {
+    'grants-platforms':GRANTS.platforms,
+    'grants-urgent':GRANTS.urgent,
+    'grants-monitor':GRANTS.monitor,
+    'grants-hold':GRANTS.hold,
+    'grants-closed':GRANTS.closed,
+    'grants-june':GRANTS.june,
+    'grants-equipment':GRANTS.equipment,
+    'grants-federal':GRANTS.federal,
+    'grants-tech':GRANTS.tech,
+  };
+  Object.entries(sections).forEach(([id,grants])=>{
+    const el=document.getElementById(id);
+    if(!el)return;
+    el.innerHTML='';
+    grants.forEach(g=>{
+      const lc=labelColorMap[g.amtColor]||labelColorMap.primary;
+      const card=document.createElement('a');
+      card.className='link-card';
+      card.href=g.url||'#';
+      card.target='_blank';
+      card.rel='noopener noreferrer';
+      card.innerHTML=`
+        <div class="link-card-name">${g.name}</div>
+        <div class="link-card-amt" style="background:${lc.bg};color:${lc.color}">${g.amt}</div>
+        <div class="link-card-desc">${g.desc}</div>
+        <div class="link-card-desc" style="margin-top:2px;font-size:.68rem;color:var(--primary)">✓ ${g.why}</div>
+        <div class="link-card-url">${g.url?'↗ Open Application':'(check site for link)'}</div>
+      `;
+      el.appendChild(card);
+    });
+  });
+}
+
+// ============================================================
+// EDUCATION
+// ============================================================
+const EDU_DATA = [];
+
+const phaseColors = {'Quick Wins':'gold','Production Skills':'blue','Business Fundamentals':'green','Advanced Skills':'purple'};
+
+function renderEdu(){
+  const table = document.getElementById('edu-table');
+  const eduDone = EDU_DATA.filter(r=>isDone('edu_'+r.week));
+  table.innerHTML=`<thead><tr>
+    <th>Wk</th><th>Phase</th><th>Course</th><th>Platform</th><th>Time</th><th>Cert</th><th>Done</th>
+  </tr></thead>`;
+  const tbody=document.createElement('tbody');
+  let curPhase='';
+  EDU_DATA.forEach(r=>{
+    const dn=isDone('edu_'+r.week);
+    const lc=labelColorMap[phaseColors[r.phase]]||labelColorMap.primary;
+    const tr=document.createElement('tr');
+    if(dn)tr.className='done-row';
+    tr.innerHTML=`
+      <td style="font-weight:600;color:var(--muted);font-variant-numeric:tabular-nums">${r.week}</td>
+      <td><span class="task-label" style="background:${lc.bg};color:${lc.color}">${r.phase}</span></td>
+      <td><a href="${r.url}" target="_blank" rel="noopener" style="color:var(--primary);font-weight:500">${r.course}</a></td>
+      <td style="color:var(--muted)">${r.platform}</td>
+      <td style="color:var(--muted);font-variant-numeric:tabular-nums">${r.hours}</td>
+      <td>${r.cert?'<span style="color:var(--green);font-size:1rem">✓</span>':'<span style="color:var(--faint)">–</span>'}</td>
+      <td><input type="checkbox" ${dn?'checked':''} onchange="toggleDone('edu_${r.week}')"></td>
+    `;
+    tbody.appendChild(tr);
+  });
+  table.appendChild(tbody);
+  // add edu tasks to main done tracking
+  EDU_DATA.forEach(r=>{
+    if(!TASKS.find(t=>t.id==='edu_'+r.week)){
+      TASKS.push({id:'edu_'+r.week,group:'edu'});
+    }
+  });
+}
+
+// ============================================================
+// MILESTONES
+// ============================================================
+const MILESTONES = [
+  {date:'Q1',title:'Set your first milestone',desc:'Use + Add on Milestones to build your roadmap.',status:'active'},
+];
+
+function renderMilestones(){
+  const tl=document.getElementById('milestones-timeline');
+  tl.innerHTML='';
+  MILESTONES.forEach(m=>{
+    const item=document.createElement('div');
+    item.className='timeline-item'+(m.status==='done'?' done':m.status==='active'?' active':'');
+    item.innerHTML=`<div class="timeline-date">${m.date}</div><div class="timeline-title">${m.title}</div><div class="timeline-desc">${m.desc}</div>`;
+    tl.appendChild(item);
+  });
+}
+
+// ============================================================
+// REVENUE ANCHORS
+// ============================================================
+const REVENUE_ANCHORS = [];
+
+function renderRevenueAnchors(){
+  const el=document.getElementById('revenue-anchors-list');
+  if(!el)return;
+  const custom=loadPbStore('sbcc_custom_revenue_anchors',[]);
+  const all=[...REVENUE_ANCHORS,...custom];
+  el.innerHTML=all.map(a=>`
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px;background:var(--offset);border-radius:var(--r)">
+      <div>
+        <div style="font-size:.82rem;font-weight:600">${escHtml(a.title)}</div>
+        <div style="font-size:.72rem;color:var(--muted)">${escHtml(a.subtitle||'')}</div>
+      </div>
+      <div style="font-size:1rem;font-weight:700;color:var(--${a.color||'primary'})">${escHtml(a.amount||'')}</div>
+    </div>`).join('');
+}
+
+// ============================================================
+// ADD MODAL — section-specific forms (localStorage)
+// ============================================================
+let addModalType=null;
+let addModalCtx={};
+
+function escHtml(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+
+function loadPbStore(key,fallback){
+  try{const v=localStorage.getItem(key);return v?JSON.parse(v):fallback}catch(e){return fallback}
+}
+function savePbStore(key,val){
+  try{localStorage.setItem(key,JSON.stringify(val))}catch(e){}
+}
+
+function injectAddButtons(){
+  document.querySelectorAll('.section-heading[data-add]').forEach(el=>{
+    if(el.querySelector('.btn-add'))return;
+    const btn=document.createElement('button');
+    btn.type='button';
+    btn.className='btn-add';
+    btn.textContent='+ Add';
+    const type=el.getAttribute('data-add');
+    let ctx={};
+    try{ctx=JSON.parse(el.getAttribute('data-add-ctx')||'{}')}catch(e){}
+    btn.onclick=(e)=>{e.stopPropagation();openAddModal(type,ctx)};
+    el.appendChild(btn);
+  });
+}
+
+const ADD_FORM_DEFS={
+  task:{
+    title:'Add Checklist Task',
+    sub:'Matches task rows: badge, deadline, link, and checklist section.',
+    fields:[
+      {name:'text',label:'Task description',type:'textarea',required:true,placeholder:'Apply Venmo Small Business Grant — $20K...'},
+      {name:'url',label:'Link URL (optional)',type:'url',placeholder:'https://helloskip.com/grants'},
+      {name:'label',label:'Badge label',type:'text',required:true,placeholder:'URGENT'},
+      {name:'color',label:'Badge color',type:'select',required:true,options:['red','orange','gold','green','blue','purple','primary'],default:'red'},
+      {name:'category',label:'Category',type:'select',required:true,options:['grants','business','mbe','portfolio','clients','software','insurance','education'],default:'grants'},
+      {name:'deadline',label:'Deadline text',type:'text',required:true,placeholder:'Closes May 31, 2026'},
+      {name:'group',label:'Checklist section',type:'select',required:true,options:[
+        {v:'urgent',l:'🔴 Urgent — Apply This Week'},
+        {v:'monitor',l:'🟡 Monitor — Check Back'},
+        {v:'hold',l:'🟠 On Hold'},
+        {v:'closed',l:'⚫ Closed / Ineligible'},
+        {v:'month',l:'🟠 This Month'},
+        {v:'june',l:'🟢 June–July 2026'},
+        {v:'later',l:'🔵 Later / When Triggered'},
+      ]},
+    ],
+  },
+  'grant-card':{
+    title:'Add Grant Card',
+    sub:'Same fields as existing grant link cards in this section.',
+    fields:[
+      {name:'name',label:'Grant name',type:'text',required:true},
+      {name:'amt',label:'Amount badge',type:'text',required:true,placeholder:'$10,000'},
+      {name:'amtColor',label:'Amount badge color',type:'select',required:true,options:['red','orange','gold','green','blue','purple','primary'],default:'green'},
+      {name:'desc',label:'Description',type:'textarea',required:true},
+      {name:'why',label:'Why it fits Pombomb Media',type:'textarea',required:true,placeholder:'Pombomb Media — ...'},
+      {name:'url',label:'Application URL',type:'url',required:true},
+    ],
+  },
+  'calendar-event':{
+    title:'Add Calendar Event',
+    sub:'Date + event pill (same as calendar legend colors).',
+    fields:[
+      {name:'date',label:'Date',type:'date',required:true},
+      {name:'text',label:'Event label',type:'text',required:true,placeholder:'Venmo $20K Grant DEADLINE'},
+      {name:'color',label:'Event color',type:'select',required:true,options:['red','orange','gold','green','blue','purple','primary'],default:'red'},
+      {name:'url',label:'Link URL (optional)',type:'url'},
+    ],
+  },
+  'edu-course':{
+    title:'Add Education Course',
+    sub:'Adds a row to the Education Roadmap table.',
+    fields:[
+      {name:'week',label:'Week #',type:'number',required:true,min:1},
+      {name:'phase',label:'Phase',type:'select',required:true,options:['Quick Wins','Production Skills','Business Fundamentals','Advanced Skills'],default:'Quick Wins'},
+      {name:'course',label:'Course name',type:'text',required:true},
+      {name:'platform',label:'Platform',type:'text',required:true,placeholder:'HubSpot Academy'},
+      {name:'hours',label:'Time estimate',type:'text',required:true,placeholder:'3 hrs'},
+      {name:'cert',label:'Certificate?',type:'select',required:true,options:[{v:'true',l:'Yes — cert available'},{v:'false',l:'No certificate'}],default:'true'},
+      {name:'url',label:'Course URL',type:'url',required:true},
+    ],
+  },
+  milestone:{
+    title:'Add Milestone',
+    sub:'Timeline item on the 12-Month Revenue Roadmap.',
+    fields:[
+      {name:'date',label:'Date range label',type:'text',required:true,placeholder:'April–June 2026'},
+      {name:'title',label:'Milestone title',type:'text',required:true},
+      {name:'desc',label:'Description',type:'textarea',required:true},
+      {name:'status',label:'Status',type:'select',required:true,options:[{v:'active',l:'Active (highlighted)'},{v:'upcoming',l:'Upcoming'},{v:'done',l:'Done'}],default:'upcoming'},
+    ],
+  },
+  'revenue-anchor':{
+    title:'Add Revenue Anchor',
+    sub:'Dashboard revenue anchor row (title, subtitle, amount).',
+    fields:[
+      {name:'title',label:'Title',type:'text',required:true,placeholder:'Client Name — Event'},
+      {name:'subtitle',label:'Subtitle',type:'text',placeholder:'Status or notes'},
+      {name:'amount',label:'Amount',type:'text',required:true,placeholder:'~$12K'},
+      {name:'color',label:'Amount color',type:'select',required:true,options:['primary','gold','blue','purple','green','red','orange'],default:'primary'},
+    ],
+  },
+  'profile-field':{
+    title:'Add Profile Field',
+    sub:'Adds a field to Application Profile (saved in sbcc_profile_fields).',
+    fields:[
+      {name:'key',label:'Field key (no spaces)',type:'text',required:true,placeholder:'bank_name'},
+      {name:'label',label:'Field label',type:'text',required:true,placeholder:'Bank Name'},
+      {name:'type',label:'Input type',type:'select',required:true,options:['text','email','tel','url','textarea'],default:'text'},
+      {name:'placeholder',label:'Placeholder',type:'text'},
+      {name:'full',label:'Full width?',type:'select',options:[{v:'false',l:'Half width'},{v:'true',l:'Full width row'}],default:'false'},
+      {name:'sensitive',label:'Sensitive (blind when hidden)?',type:'select',options:[{v:'false',l:'No'},{v:'true',l:'Yes — EIN, phone, etc.'}],default:'false'},
+    ],
+  },
+  'narrative-single':{
+    title:'Add Grant Answer (Single Paragraph)',
+    sub:'New question + card with Copy button — one paragraph body.',
+    fields:[
+      {name:'sectionHeading',label:'Question / section heading',type:'text',required:true,placeholder:'How will you use this grant?'},
+      {name:'cardTitle',label:'Card title',type:'text',required:true,placeholder:'Use of Funds'},
+      {name:'body',label:'Answer text',type:'textarea',required:true,full:true},
+    ],
+  },
+  'narrative-multi':{
+    title:'Add Grant Answer (Multi-Paragraph)',
+    sub:'Blank line between paragraphs (same as Origin Story cards).',
+    fields:[
+      {name:'sectionHeading',label:'Question / section heading',type:'text',required:true},
+      {name:'cardTitle',label:'Card title',type:'text',required:true},
+      {name:'body',label:'Answer text (blank line = new paragraph)',type:'textarea',required:true,full:true},
+    ],
+  },
+  'narrative-short-long':{
+    title:'Add SHORT + LONG Grant Answers',
+    sub:'Two cards under one heading — like How We\'ve Helped the Community.',
+    fields:[
+      {name:'sectionHeading',label:'Section heading',type:'text',required:true,placeholder:'Community connection'},
+      {name:'shortBody',label:'SHORT answer',type:'textarea',required:true,full:true},
+      {name:'longBody',label:'LONG answer (blank line = new paragraph)',type:'textarea',required:true,full:true},
+    ],
+  },
+  'grant-use-of-funds':{
+    title:'Add Grant Use-of-Funds Card',
+    sub:'Character-limited grant answer — like the $10K card.',
+    fields:[
+      {name:'sectionHeading',label:'Section heading',type:'text',required:true,placeholder:'$5K Grant — Use of Funds'},
+      {name:'amountLabel',label:'Card subtitle',type:'text',required:true,placeholder:'$5,000 · 500 Character Limit'},
+      {name:'charLimit',label:'Character limit',type:'number',required:true,default:1000,min:1},
+      {name:'body',label:'Use-of-funds answer',type:'textarea',required:true,full:true},
+    ],
+  },
+  'community-bullet':{
+    title:'Add Synthesis Bullet',
+    sub:'Reference bullet under Community Involvement notes.',
+    fields:[
+      {name:'topic',label:'Topic',type:'select',required:true,options:[
+        {v:'olm_public',l:'Our Little Miss — Public reference'},
+        {v:'olm_pombomb',l:'Our Little Miss — Pombomb Media role'},
+        {v:'colorpalooza_public',l:'ColorPalooza — Public reference'},
+        {v:'colorpalooza_pombomb',l:'ColorPalooza — Pombomb Media role'},
+        {v:'custom',l:'New custom topic…'},
+      ]},
+      {name:'customTopic',label:'New topic title (if custom)',type:'text',placeholder:'DFW Streamers'},
+      {name:'subsection',label:'Subsection label',type:'text',placeholder:'Public reference'},
+      {name:'text',label:'Bullet text',type:'textarea',required:true},
+    ],
+  },
+};
+
+function openAddModal(type,ctx={}){
+  const def=ADD_FORM_DEFS[type];
+  if(!def)return;
+  addModalType=type;
+  addModalCtx=ctx||{};
+  document.getElementById('add-modal-title').textContent=def.title;
+  document.getElementById('add-modal-sub').textContent=def.sub;
+  const form=document.getElementById('add-modal-form');
+  form.innerHTML='';
+  def.fields.forEach(f=>{
+    const wrap=document.createElement('div');
+    wrap.className='profile-field'+(f.full?' full':'');
+    wrap.style.marginBottom='10px';
+    let inputHtml='';
+    const ctxVal=addModalCtx[f.name];
+    const defVal=f.default!==undefined?f.default:'';
+    if(f.type==='textarea'){
+      inputHtml=`<textarea id="add-f-${f.name}" name="${f.name}" placeholder="${escHtml(f.placeholder||'')}" ${f.required?'required':''} style="min-height:88px">${escHtml(ctxVal??'')}</textarea>`;
+    }else if(f.type==='select'){
+      const opts=(f.options||[]).map(o=>{
+        if(typeof o==='string')return `<option value="${o}"${(ctxVal??defVal)===o?' selected':''}>${o}</option>`;
+        return `<option value="${o.v}"${String(ctxVal??defVal)===String(o.v)?' selected':''}>${o.l}</option>`;
+      }).join('');
+      inputHtml=`<select id="add-f-${f.name}" name="${f.name}" ${f.required?'required':''}>${opts}</select>`;
+    }else{
+      const val=ctxVal??defVal??'';
+      inputHtml=`<input id="add-f-${f.name}" name="${f.name}" type="${f.type||'text'}" value="${escHtml(String(val))}" placeholder="${escHtml(f.placeholder||'')}" ${f.required?'required':''}${f.min?` min="${f.min}"`:''}>`;
+    }
+    wrap.innerHTML=`<label for="add-f-${f.name}">${f.label}</label>${inputHtml}${f.name==='body'&&addModalType==='grant-use-of-funds'?'<div class="modal-field-hint" id="add-char-hint"></div>':''}`;
+    form.appendChild(wrap);
+  });
+  if(type==='task'&&addModalCtx.group){
+    const gEl=form.querySelector('[name="group"]');
+    if(gEl)gEl.value=addModalCtx.group;
+  }
+  document.getElementById('add-modal-overlay').classList.add('open');
+  form.querySelector('[name="body"]')?.addEventListener('input',updateAddCharHint);
+  form.querySelector('[name="charLimit"]')?.addEventListener('input',updateAddCharHint);
+  updateAddCharHint();
+}
+
+function updateAddCharHint(){
+  const body=document.querySelector('#add-modal-form [name="body"]');
+  const limitEl=document.querySelector('#add-modal-form [name="charLimit"]');
+  const hint=document.getElementById('add-char-hint');
+  if(!hint||!body)return;
+  const lim=parseInt(limitEl?.value||'1000',10);
+  const n=body.value.length;
+  hint.textContent=n+' / '+lim+' characters';
+  hint.style.color=n>lim?'var(--red)':'var(--muted)';
+}
+
+function closeAddModal(){
+  document.getElementById('add-modal-overlay').classList.remove('open');
+  addModalType=null;
+  addModalCtx={};
+}
+
+function readAddForm(){
+  const form=document.getElementById('add-modal-form');
+  const data={};
+  form.querySelectorAll('[name]').forEach(el=>{
+    data[el.name]=el.type==='checkbox'?el.checked:el.value.trim();
+  });
+  return data;
+}
+
+function nextCustomId(prefix){
+  return prefix+'_'+Date.now()+'_'+Math.random().toString(36).slice(2,6);
+}
+
+function mergeCustomData(){
+  loadPbStore('sbcc_custom_tasks',[]).forEach(t=>{if(!TASKS.find(x=>x.id===t.id))TASKS.push(t)});
+  const grantCustom=loadPbStore('sbcc_custom_grants',{});
+  Object.keys(grantCustom).forEach(sec=>{
+    if(!GRANTS[sec])GRANTS[sec]=[];
+    grantCustom[sec].forEach(g=>{if(!GRANTS[sec].find(x=>x.name===g.name))GRANTS[sec].push(g)});
+  });
+  loadPbStore('sbcc_custom_edu',[]).forEach(r=>{
+    if(!EDU_DATA.find(x=>x.week===r.week&&x.course===r.course))EDU_DATA.push(r);
+  });
+  EDU_DATA.sort((a,b)=>a.week-b.week);
+  loadPbStore('sbcc_custom_milestones',[]).forEach(m=>{
+    if(!MILESTONES.find(x=>x.title===m.title&&x.date===m.date))MILESTONES.push(m);
+  });
+  const calCustom=loadPbStore('sbcc_custom_cal_events',{});
+  Object.keys(calCustom).forEach(d=>{
+    if(!CAL_EVENTS[d])CAL_EVENTS[d]=[];
+    calCustom[d].forEach(ev=>CAL_EVENTS[d].push(ev));
+  });
+  loadPbStore('sbcc_custom_profile_fields',[]).forEach(f=>{
+    if(!PROFILE_FIELDS.find(x=>x.key===f.key))PROFILE_FIELDS.push(f);
+  });
+}
+
+function getCommunityBulletStore(){
+  const extra=loadPbStore('sbcc_custom_bullets',{olm_public:[],olm_pombomb:[],colorpalooza_public:[],colorpalooza_pombomb:[],custom_topics:[]});
+  return{
+    olm_public:[...COMMUNITY_INVOLVEMENT_OLM_PUBLIC,...extra.olm_public||[]],
+    olm_pombomb:[...COMMUNITY_INVOLVEMENT_OLM_POMBOMB,...extra.olm_pombomb||[]],
+    colorpalooza_public:[...COMMUNITY_INVOLVEMENT_COLORPALOOZA_PUBLIC,...extra.colorpalooza_public||[]],
+    colorpalooza_pombomb:[...COMMUNITY_INVOLVEMENT_COLORPALOOZA_POMBOMB,...extra.colorpalooza_pombomb||[]],
+    custom_topics:extra.custom_topics||[],
+  };
+}
+
+function renderCustomBulletTopics(topics){
+  if(!topics.length)return '';
+  return topics.map(t=>{
+    const pub=(t.public||[]).length?renderBulletSection(t.subPublic||'Public reference',t.public):'';
+    const role=(t.pombomb||[]).length?renderBulletSection(t.subPombomb||'Pombomb Media role',t.pombomb):'';
+    return `<div class="ref-sub" style="color:var(--primary)">${escHtml(t.title)}</div>${pub}${role}`;
+  }).join('');
+}
+
+function renderCustomNarratives(){
+  const container=document.getElementById('grant-copy-custom');
+  if(!container)return;
+  const items=loadPbStore('sbcc_custom_narratives',[]);
+  container.innerHTML='';
+  items.forEach(item=>{
+    if(item.kind==='single'||item.kind==='multi'){
+      const sec=document.createElement('div');
+      sec.className='section-heading';
+      sec.textContent=item.sectionHeading;
+      container.appendChild(sec);
+      const card=document.createElement('div');
+      card.className='card';
+      card.style.marginBottom='24px';
+      const copyId='copy-'+item.id;
+      card.innerHTML=`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div class="card-title" style="margin:0">${escHtml(item.cardTitle)}</div>
+        <button type="button" class="btn-secondary" style="font-size:.72rem" onclick="copyCustomNarrative('${item.id}')">Copy for Grant Apps →</button>
+        <span id="${copyId}" style="font-size:.75rem;color:var(--green);margin-left:8px"></span>
+      </div>`;
+      const bodyEl=item.kind==='multi'?document.createElement('div'):document.createElement('p');
+      bodyEl.className='about-text';
+      if(item.kind==='multi')renderAboutParagraphsInto(bodyEl,item.body);
+      else bodyEl.textContent=item.body;
+      card.appendChild(bodyEl);
+      container.appendChild(card);
+    }else if(item.kind==='short-long'){
+      const sec=document.createElement('div');
+      sec.className='section-heading';
+      sec.textContent=item.sectionHeading;
+      container.appendChild(sec);
+      ['SHORT','LONG'].forEach((label,i)=>{
+        const card=document.createElement('div');
+        card.className='card';
+        card.style.marginBottom='24px';
+        const bodyKey=i===0?'shortBody':'longBody';
+        card.innerHTML=`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+          <div class="card-title" style="margin:0">${label}</div>
+          <button type="button" class="btn-secondary" style="font-size:.72rem" onclick="copyCustomNarrative('${item.id}','${bodyKey}')">Copy for Grant Apps →</button>
+        </div>`;
+        const bodyEl=i===0?document.createElement('p'):document.createElement('div');
+        bodyEl.className='about-text';
+        if(i===0)bodyEl.textContent=item.shortBody;
+        else renderAboutParagraphsInto(bodyEl,item.longBody);
+        card.appendChild(bodyEl);
+        container.appendChild(card);
+      });
+    }else if(item.kind==='grant-limit'){
+      const sec=document.createElement('div');
+      sec.className='section-heading';
+      sec.textContent=item.sectionHeading;
+      container.appendChild(sec);
+      const card=document.createElement('div');
+      card.className='card';
+      card.style.marginBottom='24px';
+      const n=item.body.length;
+      const over=n>item.charLimit;
+      card.innerHTML=`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+        <div class="card-title" style="margin:0">${escHtml(item.amountLabel)}</div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:.72rem;color:${over?'var(--red)':'var(--muted)'}">${n} / ${item.charLimit} characters</span>
+          <button type="button" class="btn-secondary" style="font-size:.72rem" onclick="copyCustomNarrative('${item.id}')">Copy for Grant Apps →</button>
+        </div>
+      </div>`;
+      const p=document.createElement('p');
+      p.className='about-text';
+      p.textContent=item.body;
+      card.appendChild(p);
+      container.appendChild(card);
+    }
+  });
+}
+
+function renderAboutParagraphsInto(el,text){
+  const parts=(text||'').split('\n\n');
+  el.innerHTML=parts.map(p=>`<p style="margin:0 0 1em 0">${escHtml(p)}</p>`).join('');
+  const ps=el.querySelectorAll('p');
+  if(ps.length)ps[ps.length-1].style.marginBottom='0';
+}
+
+function copyCustomNarrative(id,part){
+  const items=loadPbStore('sbcc_custom_narratives',[]);
+  const item=items.find(x=>x.id===id);
+  if(!item)return;
+  let text=item.body;
+  if(part==='shortBody')text=item.shortBody;
+  if(part==='longBody')text=item.longBody;
+  navigator.clipboard.writeText(text||'').catch(()=>{});
+}
+
+function submitAddModal(e){
+  e.preventDefault();
+  const data=readAddForm();
+  const type=addModalType;
+  if(type==='task'){
+    const t={id:nextCustomId('t'),text:data.text,url:data.url||'',label:data.label,color:data.color,category:data.category,deadline:data.deadline,group:data.group};
+    const list=loadPbStore('sbcc_custom_tasks',[]);
+    list.push(t);
+    savePbStore('sbcc_custom_tasks',list);
+    TASKS.push(t);
+    updateStats();renderDashboardUrgent();renderDashboardMonth();renderChecklist();renderCalendar();
+  }else if(type==='grant-card'){
+    const sec=addModalCtx.section||'monitor';
+    const g={name:data.name,desc:data.desc,amt:data.amt,amtColor:data.amtColor,url:data.url,why:data.why};
+    const store=loadPbStore('sbcc_custom_grants',{});
+    if(!store[sec])store[sec]=[];
+    store[sec].push(g);
+    savePbStore('sbcc_custom_grants',store);
+    if(!GRANTS[sec])GRANTS[sec]=[];
+    GRANTS[sec].push(g);
+    renderGrants();
+  }else if(type==='calendar-event'){
+    const key=data.date;
+    const ev={text:data.text,color:data.color,url:data.url||''};
+    const store=loadPbStore('sbcc_custom_cal_events',{});
+    if(!store[key])store[key]=[];
+    store[key].push(ev);
+    savePbStore('sbcc_custom_cal_events',store);
+    if(!CAL_EVENTS[key])CAL_EVENTS[key]=[];
+    CAL_EVENTS[key].push(ev);
+    renderCalendar();
+  }else if(type==='edu-course'){
+    const r={week:parseInt(data.week,10),phase:data.phase,course:data.course,platform:data.platform,hours:data.hours,cert:data.cert==='true',url:data.url};
+    const list=loadPbStore('sbcc_custom_edu',[]);
+    list.push(r);
+    savePbStore('sbcc_custom_edu',list);
+    EDU_DATA.push(r);
+    EDU_DATA.sort((a,b)=>a.week-b.week);
+    renderEdu();
+  }else if(type==='milestone'){
+    const m={date:data.date,title:data.title,desc:data.desc,status:data.status};
+    const list=loadPbStore('sbcc_custom_milestones',[]);
+    list.push(m);
+    savePbStore('sbcc_custom_milestones',list);
+    MILESTONES.push(m);
+    renderMilestones();
+  }else if(type==='revenue-anchor'){
+    const a={title:data.title,subtitle:data.subtitle||'',amount:data.amount,color:data.color};
+    const list=loadPbStore('sbcc_custom_revenue_anchors',[]);
+    list.push(a);
+    savePbStore('sbcc_custom_revenue_anchors',list);
+    renderRevenueAnchors();
+  }else if(type==='profile-field'){
+    const key=data.key.replace(/\s+/g,'_').toLowerCase();
+    const f={key,label:data.label,type:data.type||'text',placeholder:data.placeholder||'',full:data.full==='true',sensitive:data.sensitive==='true'};
+    const list=loadPbStore('sbcc_custom_profile_fields',[]);
+    list.push(f);
+    savePbStore('sbcc_custom_profile_fields',list);
+    PROFILE_FIELDS.push(f);
+    renderProfileForm();
+  }else if(type==='narrative-single'){
+    const item={id:nextCustomId('cn'),kind:'single',sectionHeading:data.sectionHeading,cardTitle:data.cardTitle,body:data.body};
+    const list=loadPbStore('sbcc_custom_narratives',[]);
+    list.push(item);
+    savePbStore('sbcc_custom_narratives',list);
+    renderCustomNarratives();
+  }else if(type==='narrative-multi'){
+    const item={id:nextCustomId('cn'),kind:'multi',sectionHeading:data.sectionHeading,cardTitle:data.cardTitle,body:data.body};
+    const list=loadPbStore('sbcc_custom_narratives',[]);
+    list.push(item);
+    savePbStore('sbcc_custom_narratives',list);
+    renderCustomNarratives();
+  }else if(type==='narrative-short-long'){
+    const item={id:nextCustomId('cn'),kind:'short-long',sectionHeading:data.sectionHeading,shortBody:data.shortBody,longBody:data.longBody};
+    const list=loadPbStore('sbcc_custom_narratives',[]);
+    list.push(item);
+    savePbStore('sbcc_custom_narratives',list);
+    renderCustomNarratives();
+  }else if(type==='grant-use-of-funds'){
+    const item={id:nextCustomId('cn'),kind:'grant-limit',sectionHeading:data.sectionHeading,amountLabel:data.amountLabel,charLimit:parseInt(data.charLimit,10)||1000,body:data.body};
+    const list=loadPbStore('sbcc_custom_narratives',[]);
+    list.push(item);
+    savePbStore('sbcc_custom_narratives',list);
+    renderCustomNarratives();
+  }else if(type==='community-bullet'){
+    const store=loadPbStore('sbcc_custom_bullets',{olm_public:[],olm_pombomb:[],colorpalooza_public:[],colorpalooza_pombomb:[],custom_topics:[]});
+    if(data.topic==='custom'){
+      const title=data.customTopic||'Custom topic';
+      if(!store.custom_topics)store.custom_topics=[];
+      let topic=store.custom_topics.find(x=>x.title===title);
+      if(!topic){topic={title,subPublic:data.subsection||'Notes',subPombomb:'',public:[],pombomb:[]};store.custom_topics.push(topic)}
+      topic.public=topic.public||[];
+      topic.public.push(data.text);
+    }else{
+      if(!store[data.topic])store[data.topic]=[];
+      store[data.topic].push(data.text);
+    }
+    savePbStore('sbcc_custom_bullets',store);
+    renderCommunityInvolvement();
+  }
+  closeAddModal();
+}
+
+// ============================================================
+// NAVIGATION
+// ============================================================
+function switchView(name){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('view-'+name).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n=>{
+    if(n.getAttribute('onclick')&&n.getAttribute('onclick').includes("'"+name+"'"))n.classList.add('active');
+  });
+  const titles={dashboard:'Dashboard',calendar:'Calendar',profile:'Application Profile',narrative:'Grant Copy',grants:'Grants & Funding',checklist:'Full Checklist',education:'Education Roadmap',milestones:'12-Month Milestones'};
+  document.getElementById('view-title').textContent=titles[name]||name;
+}
+
+
+function mobileSwitchView(name){
+  switchView(name);
+  document.querySelectorAll('.mobile-nav-btn[data-mobile-view]').forEach(btn=>{
+    btn.classList.toggle('active',btn.getAttribute('data-mobile-view')===name);
+  });
+}
+function toggleMobileMore(open){
+  const sheet=document.getElementById('mobile-more-sheet');
+  if(!sheet)return;
+  if(open===undefined)sheet.classList.toggle('open');
+  else sheet.classList.toggle('open',!!open);
+}
+const _switchViewOrig=switchView;
+switchView=function(name){
+  _switchViewOrig(name);
+  document.querySelectorAll('.mobile-nav-btn[data-mobile-view]').forEach(btn=>{
+    btn.classList.toggle('active',btn.getAttribute('data-mobile-view')===name);
+  });
+};
+
+function toggleTheme(){
+  const html=document.documentElement;
+  const cur=html.getAttribute('data-theme');
+  html.setAttribute('data-theme',cur==='dark'?'light':'dark');
+}
+
+// ============================================================
+// INIT
+// ============================================================
+document.addEventListener('DOMContentLoaded',()=>{
+  mergeCustomData();
+  injectAddButtons();
+  // add edu IDs to TASKS array for counting
+  EDU_DATA.forEach(r=>{
+    if(!TASKS.find(t=>t.id==='edu_'+r.week)){
+      TASKS.push({id:'edu_'+r.week,text:r.course,url:r.url,label:'EDU',color:'gold',category:'education',deadline:'Week '+r.week,group:'edu'});
+    }
+  });
+  updateStats();
+  renderProfileForm();
+  renderProfilePreview();
+  syncSensitiveUI();
+  renderWhatWeDo();
+  renderWhyWeStarted();
+  renderCommunityIssues();
+  renderCommunityHelpShort();
+  renderCommunityHelpLong();
+  renderCommunityInvolvement();
+  renderCustomerHelp();
+  renderMission();
+  renderGrantImpact();
+  renderGrant10k();
+  renderCustomers();
+  renderProudMoment();
+  renderBiggestObstacle();
+  render2026Goals();
+  renderThoughtsComments();
+  renderCustomNarratives();
+  renderRevenueAnchors();
+  renderDashboardUrgent();
+  renderDashboardMonth();
+  renderChecklist();
+  renderCalendar();
+  renderGrants();
+  renderEdu();
+  renderMilestones();
+});
+</script>
+</body>
+</html>
