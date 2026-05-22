@@ -1,8 +1,13 @@
 import http from 'http';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { runAgent } from './lib/agent.js';
 import { fetchProxiedPage, validateResearchUrl } from './lib/research-proxy.js';
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = Number(process.env.PORT || 3921);
+const BUNDLE = path.join(__dirname, '../hosting-bundle');
 const CORS = process.env.SBCC_CORS_ORIGIN || '*';
 
 function corsHeaders() {
@@ -26,6 +31,37 @@ async function readBody(req) {
   return JSON.parse(raw);
 }
 
+function contentType(filePath) {
+  const ext = path.extname(filePath).toLowerCase();
+  const map = {
+    '.html': 'text/html; charset=utf-8',
+    '.js': 'application/javascript; charset=utf-8',
+    '.css': 'text/css; charset=utf-8',
+    '.json': 'application/json',
+    '.png': 'image/png',
+    '.svg': 'image/svg+xml',
+    '.ico': 'image/x-icon',
+    '.webmanifest': 'application/manifest+json',
+  };
+  return map[ext] || 'application/octet-stream';
+}
+
+function serveStatic(req, res, url) {
+  let rel = decodeURIComponent(url.pathname);
+  if (rel === '/' || rel === '') rel = '/index.html';
+  const filePath = path.join(BUNDLE, rel.replace(/^\//, ''));
+  if (!filePath.startsWith(BUNDLE)) {
+    sendJson(res, 403, { error: 'Forbidden' });
+    return true;
+  }
+  if (!fs.existsSync(filePath) || fs.statSync(filePath).isDirectory()) {
+    return false;
+  }
+  res.writeHead(200, { 'Content-Type': contentType(filePath), ...corsHeaders() });
+  fs.createReadStream(filePath).pipe(res);
+  return true;
+}
+
 const server = http.createServer(async (req, res) => {
   if (req.method === 'OPTIONS') {
     res.writeHead(204, corsHeaders());
@@ -35,26 +71,27 @@ const server = http.createServer(async (req, res) => {
 
   const url = new URL(req.url, `http://${req.headers.host}`);
 
-  if (req.method === 'GET' && url.pathname === '/api/health') {
+  if (req.method === 'GET' && (url.pathname === '/api/health' || url.pathname === '/api/health.php')) {
     sendJson(res, 200, {
       ok: true,
-      service: 'sbcc-ai-server',
-      version: '1.1.0',
+      service: 'sbcc-ai-api',
+      version: '2.0.0',
+      integrated: true,
       agentProviders: ['openai', 'anthropic'],
       researchAssistant: ['perplexity', 'background-layer'],
     });
     return;
   }
 
-  if (req.method === 'GET' && url.pathname === '/api/research/proxy') {
+  if (req.method === 'GET' && (url.pathname === '/api/research/proxy' || url.pathname === '/api/research/proxy.php')) {
     try {
       const target = url.searchParams.get('url');
       if (!target) {
-        sendJson(res, 400, { error: 'url query param required' });
+        sendJson(res, 400, { error: 'url required' });
         return;
       }
       validateResearchUrl(target);
-      const proxyBase = `${url.origin}/api/research/proxy`;
+      const proxyBase = `${url.origin}/api/research/proxy.php`;
       const page = await fetchProxiedPage(target, proxyBase);
       res.writeHead(200, {
         'Content-Type': 'text/html; charset=utf-8',
@@ -63,14 +100,13 @@ const server = http.createServer(async (req, res) => {
       });
       res.end(page.html);
     } catch (err) {
-      console.error('[sbcc-research-proxy]', err.message);
       res.writeHead(502, { 'Content-Type': 'text/plain', ...corsHeaders() });
       res.end(`Research proxy error: ${err.message}`);
     }
     return;
   }
 
-  if (req.method === 'POST' && url.pathname === '/api/chat') {
+  if (req.method === 'POST' && (url.pathname === '/api/chat' || url.pathname === '/api/chat.php')) {
     try {
       const body = await readBody(req);
       const { message, history, context, settings, prefetchedResearch } = body;
@@ -78,7 +114,6 @@ const server = http.createServer(async (req, res) => {
         sendJson(res, 400, { error: 'message required' });
         return;
       }
-
       const result = await runAgent({
         message: String(message).trim(),
         history: Array.isArray(history) ? history : [],
@@ -86,7 +121,6 @@ const server = http.createServer(async (req, res) => {
         settings: settings || {},
         prefetchedResearch: prefetchedResearch || null,
       });
-
       sendJson(res, 200, result);
     } catch (err) {
       console.error('[sbcc-ai]', err);
@@ -100,11 +134,16 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  if (req.method === 'GET' && serveStatic(req, res, url)) return;
+
   sendJson(res, 404, { error: 'Not found' });
 });
 
+if (!fs.existsSync(BUNDLE)) {
+  console.warn(`Warning: ${BUNDLE} missing — run: python3 scripts/build-hosting-bundle.py`);
+}
+
 server.listen(PORT, () => {
-  console.log(`SBCC AI server listening on http://localhost:${PORT}`);
-  console.log(`  Health: GET /api/health`);
-  console.log(`  Chat:   POST /api/chat`);
+  console.log(`SMCC integrated server: http://127.0.0.1:${PORT}/command-center.html`);
+  console.log(`  API: /api/health.php  /api/chat.php  /api/research/proxy.php`);
 });

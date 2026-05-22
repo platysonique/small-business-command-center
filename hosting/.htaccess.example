@@ -1,0 +1,19 @@
+# Apache — optional password for your secret SMCC folder
+# Rename to .htaccess and set RewriteBase to your folder path (e.g. /private/smcc/)
+
+# RewriteBase /private/smcc/
+
+# Uncomment to password-protect the whole folder (create .htpasswd first):
+# AuthType Basic
+# AuthName "SMCC"
+# AuthUserFile /full/server/path/to/.htpasswd
+# Require valid-user
+
+<IfModule mod_headers.c>
+  Header set X-Robots-Tag "noindex, nofollow"
+</IfModule>
+
+# PHP 8+ recommended; most free hosts support PHP 7.4+
+<IfModule mod_php.c>
+  php_flag display_errors Off
+</IfModule>

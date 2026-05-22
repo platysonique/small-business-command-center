@@ -141,7 +141,11 @@ text = text.replace(
 )
 text = text.replace(
     '<script src="js/sbcc-research-layer.js"></script>',
-    '<script src="../js/sbcc-research-layer.js"></script>',
+    '<script src="../js/sbcc-api.js"></script>\n<script src="../js/sbcc-research-layer.js"></script>',
+)
+text = text.replace(
+    '<script src="js/sbcc-api.js"></script>',
+    '<script src="../js/sbcc-api.js"></script>',
 )
 
 MOBILE.write_text(text, encoding="utf-8")

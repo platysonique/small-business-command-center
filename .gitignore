@@ -14,5 +14,5 @@ Thumbs.db
 node_modules/
 package-lock.json
 
-# AI server (optional local install)
-server/node_modules/
+# Build output (run scripts/build-hosting-bundle.py)
+hosting-bundle/

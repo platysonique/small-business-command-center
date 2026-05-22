@@ -24,6 +24,26 @@ A local dev server (e.g. `python3 -m http.server`) is **optional** — useful fo
 
 If in doubt, run the dashboard **locally on your own machine** (open the HTML file or a private local server) and do not publish a copy containing real business data.
 
+## Deploy to your personal web hosting (integrated)
+
+**One upload folder** — dashboard + PHP API + research layer on **your domain**. No separate backend URL to configure.
+
+```bash
+python3 scripts/build-hosting-bundle.py
+```
+
+Upload everything in `hosting-bundle/` to a secret folder on your host (PHP + curl required). Open your personal link — AI Settings backend stays **`auto`**.
+
+Full guide: **[DEPLOY.md](DEPLOY.md)**
+
+Local same-as-hosting test:
+
+```bash
+python3 scripts/build-hosting-bundle.py
+cd server && npm start
+# http://127.0.0.1:3921/command-center.html
+```
+
 ## Quick start (zero install)
 
 **Option A — open the file**

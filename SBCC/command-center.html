@@ -1909,8 +1909,10 @@ document.addEventListener('DOMContentLoaded',()=>{
   renderMilestones();
 });
 </script>
+<script src="js/sbcc-api.js"></script>
 <script src="js/sbcc-research-layer.js"></script>
 <script src="js/sbcc-void-search.js"></script>
 <script src="js/sbcc-ai.js"></script>
+<script>if('serviceWorker' in navigator&&location.protocol.startsWith('http')){navigator.serviceWorker.register('./sw.js').catch(function(){})}</script>
 </body>
 </html>

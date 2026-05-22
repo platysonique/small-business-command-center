@@ -32,8 +32,12 @@
   }
 
   function proxyUrl(backendBase, targetUrl) {
-    const base = String(backendBase || 'http://localhost:3921').replace(/\/$/, '');
-    return `${base}/api/research/proxy?url=${encodeURIComponent(targetUrl)}`;
+    if (window.SBCC_API) {
+      const base = window.SBCC_API.resolveApiBase({ backendUrl: backendBase === 'auto' ? 'auto' : backendBase });
+      return window.SBCC_API.endpoints(base).proxy(targetUrl);
+    }
+    const base = String(backendBase || 'http://127.0.0.1:3921/api').replace(/\/$/, '');
+    return `${base}/research/proxy.php?url=${encodeURIComponent(targetUrl)}`;
   }
 
   function waitForLoad(ifr, timeoutMs = LOAD_TIMEOUT_MS) {

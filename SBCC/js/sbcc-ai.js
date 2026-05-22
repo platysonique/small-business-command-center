@@ -3,7 +3,28 @@
  * Requires: command-center globals (loadProfile, PROFILE_FIELDS, TASKS, etc.)
  */
 (function () {
-  const DEFAULT_BACKEND = 'http://localhost:3921';
+  const DEFAULT_BACKEND = 'auto';
+
+  function resolveApiBase(settings) {
+    if (window.SBCC_API) return window.SBCC_API.resolveApiBase(settings || loadSettings());
+    const custom = (settings?.backendUrl || '').trim();
+    if (custom && custom !== 'auto') return custom.replace(/\/$/, '');
+    if (window.location.protocol === 'http:' || window.location.protocol === 'https:') {
+      return window.location.origin + (window.SBCC_API?.pageDir?.() ?? window.location.pathname.replace(/\/[^/]+$/, '')) + '/api';
+    }
+    return 'http://127.0.0.1:3921/api';
+  }
+
+  function apiEndpoints(settings) {
+    const base = resolveApiBase(settings);
+    if (window.SBCC_API) return window.SBCC_API.endpoints(base);
+    const b = base.replace(/\/$/, '');
+    return {
+      health: b + '/health.php',
+      chat: b + '/chat.php',
+      proxy: (url) => b + '/research/proxy.php?url=' + encodeURIComponent(url),
+    };
+  }
 
   function detectStorageNs() {
     if (typeof localStorage === 'undefined') return 'sbcc';
@@ -203,9 +224,10 @@
     if (hasPerplexity || !layerOn || !window.SBCC_LAYER) return null;
     if (!looksLikeSearch(message)) return null;
 
-    const backendUrl = (settings.backendUrl || DEFAULT_BACKEND).replace(/\/$/, '');
+    const apiBase = resolveApiBase(settings);
+
     try {
-      const health = await fetch(backendUrl + '/api/health', { signal: AbortSignal.timeout(4000) });
+      const health = await fetch(apiEndpoints(settings).health, { signal: AbortSignal.timeout(4000) });
       if (!health.ok) return null;
     } catch {
       return null;
@@ -214,7 +236,7 @@
     if (settings.researchAssistant?.peekLayer) window.SBCC_LAYER.setPeek(true);
 
     return window.SBCC_LAYER.research(message, {
-      backendUrl,
+      backendUrl: apiBase,
       peek: settings.researchAssistant?.peekLayer,
       maxPages: 2,
     });
@@ -279,8 +301,8 @@
       <div class="card" style="margin-bottom:16px">
         <div class="card-title">Backend connection</div>
         <label style="font-size:.68rem;color:var(--muted);display:block;margin-bottom:4px">AI server URL</label>
-        <input type="url" id="ai-backend-url" value="${esc(s.backendUrl)}" placeholder="http://localhost:3921" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:var(--r);background:var(--offset);font:inherit">
-        <p style="font-size:.72rem;color:var(--muted);margin-top:8px;line-height:1.45">Run <code style="font-size:.68rem">npm start</code> in the <code style="font-size:.68rem">server/</code> folder. The static dashboard works offline — AI needs this backend.</p>
+        <input type="text" id="ai-backend-url" value="${esc(s.backendUrl || 'auto')}" placeholder="auto" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:var(--r);background:var(--offset);font:inherit">
+        <p style="font-size:.72rem;color:var(--muted);margin-top:8px;line-height:1.45"><strong>auto</strong> = integrated API in the <code style="font-size:.68rem">api/</code> folder next to this page (upload bundle). Override only for a separate server.</p>
         <button type="button" class="btn-secondary" id="ai-test-backend" style="margin-top:10px;font-size:.75rem">Test connection</button>
         <span id="ai-backend-status" style="font-size:.72rem;margin-left:8px;color:var(--muted)"></span>
       </div>
@@ -344,11 +366,11 @@
 
   async function testBackend() {
     const status = document.getElementById('ai-backend-status');
-    const url = (document.getElementById('ai-backend-url')?.value || DEFAULT_BACKEND).replace(/\/$/, '');
+    const s = loadSettings();
     status.textContent = 'Testing…';
     status.style.color = 'var(--muted)';
     try {
-      const res = await fetch(url + '/api/health', { signal: AbortSignal.timeout(8000) });
+      const res = await fetch(apiEndpoints(s).health, { signal: AbortSignal.timeout(8000) });
       const data = await res.json();
       status.textContent = data.ok ? 'Connected ✓' : 'Unexpected response';
       status.style.color = data.ok ? 'var(--green)' : 'var(--red)';
@@ -528,9 +550,8 @@
     const dot = document.getElementById('sbcc-ai-dot');
     if (!dot) return;
     const s = loadSettings();
-    const url = (s.backendUrl || DEFAULT_BACKEND).replace(/\/$/, '');
     try {
-      const res = await fetch(url + '/api/health', { signal: AbortSignal.timeout(4000) });
+      const res = await fetch(apiEndpoints(s).health, { signal: AbortSignal.timeout(4000) });
       dot.style.background = res.ok ? 'var(--green)' : 'var(--orange)';
     } catch {
       dot.style.background = 'var(--red)';
@@ -538,8 +559,7 @@
   }
 
   async function postChat(text, s, prefetchedResearch = null) {
-    const url = (s.backendUrl || DEFAULT_BACKEND).replace(/\/$/, '') + '/api/chat';
-    const res = await fetch(url, {
+    const res = await fetch(apiEndpoints(s).chat, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -590,7 +610,7 @@
       if (data.needsLayerResearch && window.SBCC_LAYER) {
         status.textContent = 'Research layer browsing…';
         prefetchedResearch = await window.SBCC_LAYER.research(data.query || text, {
-          backendUrl: (s.backendUrl || DEFAULT_BACKEND).replace(/\/$/, ''),
+          backendUrl: resolveApiBase(s),
           peek: s.researchAssistant?.peekLayer,
         });
         data = await postChat(text, s, prefetchedResearch);
