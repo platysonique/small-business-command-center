@@ -6,6 +6,10 @@ A **static, browser-only** grant and operations dashboard for small businesses �
 
 A local dev server (e.g. `python3 -m http.server`) is **optional** — useful for previewing over HTTP during development, not required for normal use.
 
+**Live demo (GitHub Pages):** [https://platysonique.github.io/small-business-command-center/](https://platysonique.github.io/small-business-command-center/)
+
+**Repository:** [https://github.com/platysonique/small-business-command-center](https://github.com/platysonique/small-business-command-center)
+
 ## Quick start (zero install)
 
 **Option A — open the file**
