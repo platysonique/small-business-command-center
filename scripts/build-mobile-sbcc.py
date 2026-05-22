@@ -79,6 +79,7 @@ bottom_nav = """
       <button type="button" onclick="mobileSwitchView('profile');toggleMobileMore(false)"><span class="nav-dot" style="background:var(--blue)"></span>App Profile</button>
       <button type="button" onclick="mobileSwitchView('education');toggleMobileMore(false)"><span class="nav-dot" style="background:var(--blue)"></span>Education</button>
       <button type="button" onclick="mobileSwitchView('milestones');toggleMobileMore(false)"><span class="nav-dot" style="background:var(--purple)"></span>Milestones</button>
+      <button type="button" onclick="mobileSwitchView('ai-settings');toggleMobileMore(false)"><span class="nav-dot" style="background:var(--primary)"></span>AI Settings</button>
     </div>
   </div>
 </div>
@@ -116,6 +117,15 @@ text = text.replace(
 text = text.replace(
     '<div class="topbar">\n    <h1 id="view-title">Dashboard</h1>',
     '<div class="topbar">\n    <h1 id="view-title">Dashboard</h1>\n    <button class="theme-btn" type="button" onclick="toggleTheme()" aria-label="Toggle theme" title="Toggle theme" style="margin-left:auto"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></button>',
+)
+
+text = text.replace(
+    '<link rel="stylesheet" href="js/sbcc-ai.css">',
+    '<link rel="stylesheet" href="../js/sbcc-ai.css">',
+)
+text = text.replace(
+    '<script src="js/sbcc-ai.js"></script>',
+    '<script src="../js/sbcc-ai.js"></script>',
 )
 
 MOBILE.write_text(text, encoding="utf-8")

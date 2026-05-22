@@ -1,8 +1,10 @@
 # Small Business Command Center (SBCC)
 
-A **static, browser-only** grant and operations dashboard for small businesses — tasks, grants, application profile, grant copy, calendar, checklists, and sensitive-field blinds. No backend. No database. No npm install.
+A **static, browser-only** grant and operations dashboard for small businesses — tasks, grants, application profile, grant copy, calendar, checklists, sensitive-field blinds, and an **optional AI assistant**.
 
-**You do not need anything installed on your computer.** Open an HTML file in any modern browser, or upload this repo to **any static web host** you like (GitHub Pages, Netlify, Cloudflare Pages, S3, cPanel, etc.). Everything runs client-side; your data stays in **localStorage** on that browser/device.
+**You do not need anything installed** to use the dashboard. Open an HTML file in any browser, or upload to **any static web host** (GitHub Pages, Netlify, Cloudflare Pages, S3, cPanel, etc.). Data stays in **localStorage**.
+
+The **AI chat bubble** is optional — run the Node backend in `server/` and configure providers in **AI Settings**.
 
 A local dev server (e.g. `python3 -m http.server`) is **optional** — useful for previewing over HTTP during development, not required for normal use.
 
@@ -31,7 +33,9 @@ Works fully offline after the first load (fonts load from Google Fonts when onli
 | `index.html` | Landing page — links to desktop and mobile dashboards |
 | `SBCC/command-center.html` | **Blank template** — desktop layout, empty data, `sbcc_*` localStorage |
 | `SBCC/mobile/command-center.html` | **Blank mobile** — bottom nav, same features |
-| `scripts/` | Optional generators to rebuild blank/mobile from a filled dashboard (developers only) |
+| `SBCC/js/sbcc-ai.js` + `sbcc-ai.css` | Draggable AI chat bubble + settings UI |
+| `server/` | **Optional AI backend** — Perplexity search, OpenAI/Anthropic agents, form-fill tools |
+| `scripts/` | Generators to rebuild blank/mobile from a filled dashboard |
 
 ## Features
 
@@ -42,6 +46,46 @@ Works fully offline after the first load (fonts load from Google Fonts when onli
 - **Sensitive blinds** — EIN, phone, address, DOB, etc. hidden by default with middle dots (`······`); toggle with the eye button in the top bar
 
 Sensitive preference key: `sbcc_sensitive_blinded` (default: hidden).
+
+## AI Assistant (optional)
+
+Floating **draggable chat bubble** on every dashboard page:
+
+| Question type | Behavior |
+|---------------|----------|
+| **Your data** (“summarize my tasks”, “what’s in my profile?”) | Synthesized from command center context |
+| **Search / research** (grants, deadlines, external facts) | **Perplexity only** — no internal knowledge allowed |
+| **Form fill** (“fill my industry field”, “add this grant”) | Agent tools update profile, tasks, grants, narratives |
+
+### Privacy
+
+- Sensitive fields (EIN, phone, address, DOB, etc.) are **redacted** before any API call unless you enable **FULL ACCESS** in AI Settings.
+- API keys are stored in **your browser** (`sbcc_ai_settings`) and sent only to **your** backend URL.
+- The static GitHub Pages site does **not** include your keys or profile data.
+
+### Run the AI backend
+
+```bash
+cd server
+cp .env.example .env   # optional server-side keys
+npm start              # http://localhost:3921
+```
+
+Then open the dashboard, go to **AI Settings**, set backend URL, add:
+
+- **Perplexity API key** (required for search)
+- **OpenAI or Anthropic key** (for agent + form fill)
+
+Deploy `server/` to any Node host (Railway, Render, Fly.io, VPS) and point AI Settings at your deployed URL.
+
+### Provider plug-in architecture
+
+The backend supports pluggable providers (`server/lib/providers.js`):
+
+- **Perplexity** — `sonar-pro` web-grounded search (mandatory for research)
+- **OpenAI** — tool-calling agent
+- **Anthropic** — tool-calling agent
+- **Google** — reserved in settings UI for future plug-in
 
 ## Host anywhere (examples)
 
@@ -94,7 +138,7 @@ Requires Python 3 only — still no app server.
 ## Privacy
 
 - Data is stored in **your browser’s localStorage** (`sbcc_profile`, `sbcc_done`, `sbcc_custom_*`, etc.).
-- Nothing is sent to a server unless you choose to host the static files publicly (the HTML/JS only — not your saved profile data).
+- Nothing is sent to a server unless you enable the **AI assistant** and configure a backend + API keys.
 - **Copy All to Clipboard** uses real values even when sensitive fields are visually blinded.
 
 ## License

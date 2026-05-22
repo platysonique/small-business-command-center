@@ -1,0 +1,25 @@
+{
+  "name": "small-business-command-center",
+  "version": "1.0.0",
+  "description": "A **static, browser-only** grant and operations dashboard for small businesses — tasks, grants, application profile, grant copy, calendar, checklists, and sensitive-field blinds. No backend. No database. No npm install.",
+  "main": "index.js",
+  "scripts": {
+    "test": "node scripts/button-smoke-test.mjs",
+    "ai:server": "node server/index.js",
+    "ai:dev": "node --watch server/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/platysonique/small-business-command-center.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/platysonique/small-business-command-center/issues"
+  },
+  "homepage": "https://github.com/platysonique/small-business-command-center#readme",
+  "devDependencies": {
+    "playwright": "^1.60.0"
+  }
+}

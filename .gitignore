@@ -10,7 +10,9 @@ __pycache__/
 Thumbs.db
 *.swp
 
-# Dev test deps (optional — npm install playwright in scripts/)
+# Dev test deps (optional local playwright install)
 node_modules/
 package-lock.json
-package.json
+
+# AI server (optional local install)
+server/node_modules/

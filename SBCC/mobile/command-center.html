@@ -272,6 +272,7 @@ body.sbcc-mobile .modal-overlay{align-items:flex-end;padding:0}
   .stat-grid{grid-template-columns:repeat(2,1fr)}
 }
 </style>
+<link rel="stylesheet" href="../js/sbcc-ai.css">
 </head>
 <body class="sbcc-mobile">
 
@@ -315,6 +316,11 @@ body.sbcc-mobile .modal-overlay{align-items:flex-end;padding:0}
     <button class="nav-item" onclick="switchView('milestones')">
       <span class="nav-dot" style="background:var(--purple)"></span>
       <span>Milestones</span>
+    </button>
+    <div class="nav-section">AI</div>
+    <button class="nav-item" onclick="switchView('ai-settings')">
+      <span class="nav-dot" style="background:var(--primary)"></span>
+      <span>AI Settings</span>
     </button>
   </nav>
   <div class="sidebar-footer">
@@ -670,6 +676,21 @@ body.sbcc-mobile .modal-overlay{align-items:flex-end;padding:0}
     <div class="timeline" id="milestones-timeline"></div>
   </div>
 
+  <!-- AI SETTINGS VIEW -->
+  <div class="view" id="view-ai-settings">
+    <div class="section-heading" style="margin-top:0">🤖 AI Assistant Settings</div>
+    <div class="card" style="margin-bottom:16px">
+      <p style="font-size:.78rem;color:var(--muted);line-height:1.55;margin-bottom:12px">Connect providers, control sensitive data, and point at your AI backend. The dashboard stays static — the optional <strong>server/</strong> backend powers the chat bubble.</p>
+      <ul style="font-size:.75rem;color:var(--muted);line-height:1.6;margin-left:1.1rem">
+        <li><strong>Local questions</strong> — synthesized from your command center data</li>
+        <li><strong>Search / research</strong> — Perplexity only (no internal knowledge)</li>
+        <li><strong>Form fill</strong> — AI can update profile, tasks, grants, narratives</li>
+      </ul>
+    </div>
+    <div id="ai-settings-form"></div>
+    <span id="ai-settings-saved" style="font-size:.75rem;color:var(--green)"></span>
+  </div>
+
 </main>
 
 <nav class="mobile-bottom-nav" aria-label="Main navigation">
@@ -697,6 +718,7 @@ body.sbcc-mobile .modal-overlay{align-items:flex-end;padding:0}
       <button type="button" onclick="mobileSwitchView('profile');toggleMobileMore(false)"><span class="nav-dot" style="background:var(--blue)"></span>App Profile</button>
       <button type="button" onclick="mobileSwitchView('education');toggleMobileMore(false)"><span class="nav-dot" style="background:var(--blue)"></span>Education</button>
       <button type="button" onclick="mobileSwitchView('milestones');toggleMobileMore(false)"><span class="nav-dot" style="background:var(--purple)"></span>Milestones</button>
+      <button type="button" onclick="mobileSwitchView('ai-settings');toggleMobileMore(false)"><span class="nav-dot" style="background:var(--primary)"></span>AI Settings</button>
     </div>
   </div>
 </div>
@@ -1901,7 +1923,7 @@ function switchView(name){
   document.querySelectorAll('.nav-item').forEach(n=>{
     if(n.getAttribute('onclick')&&n.getAttribute('onclick').includes("'"+name+"'"))n.classList.add('active');
   });
-  const titles={dashboard:'Dashboard',calendar:'Calendar',profile:'Application Profile',narrative:'Grant Copy',grants:'Grants & Funding',checklist:'Full Checklist',education:'Education Roadmap',milestones:'12-Month Milestones'};
+  const titles={dashboard:'Dashboard',calendar:'Calendar',profile:'Application Profile',narrative:'Grant Copy',grants:'Grants & Funding',checklist:'Full Checklist',education:'Education Roadmap',milestones:'12-Month Milestones','ai-settings':'AI Settings'};
   document.getElementById('view-title').textContent=titles[name]||name;
 }
 
@@ -1974,5 +1996,6 @@ document.addEventListener('DOMContentLoaded',()=>{
   renderMilestones();
 });
 </script>
+<script src="../js/sbcc-ai.js"></script>
 </body>
 </html>
