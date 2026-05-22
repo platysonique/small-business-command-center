@@ -9,3 +9,8 @@ __pycache__/
 .DS_Store
 Thumbs.db
 *.swp
+
+# Dev test deps (optional — npm install playwright in scripts/)
+node_modules/
+package-lock.json
+package.json

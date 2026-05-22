@@ -721,6 +721,44 @@ body.sbcc-mobile .modal-overlay{align-items:flex-end;padding:0}
 const TASKS = [];
 
 // ============================================================
+// CLIPBOARD (works on HTTPS, localhost, and file://)
+// ============================================================
+function copyToClipboard(text, feedback, successLabel){
+  const msgEl=typeof feedback==='string'?document.getElementById(feedback):feedback;
+  const okLabel=successLabel||'Copied ✓';
+  const show=(ok,errMsg)=>{
+    if(!msgEl)return;
+    msgEl.textContent=ok?okLabel:(errMsg||'Copy failed');
+    msgEl.style.color=ok?'var(--green)':'var(--red)';
+    setTimeout(()=>{msgEl.textContent='';msgEl.style.color='var(--green)'},2500);
+  };
+  const str=String(text??'');
+  const fallback=()=>{
+    try{
+      const ta=document.createElement('textarea');
+      ta.value=str;
+      ta.setAttribute('readonly','');
+      ta.style.cssText='position:fixed;left:-9999px;top:0;opacity:0';
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      ta.setSelectionRange(0,str.length);
+      const ok=document.execCommand('copy');
+      document.body.removeChild(ta);
+      show(!!ok,ok?null:'Copy blocked — try HTTPS or select text manually');
+      return Promise.resolve(!!ok);
+    }catch(e){
+      show(false,'Copy not available in this browser');
+      return Promise.resolve(false);
+    }
+  };
+  if(navigator.clipboard&&window.isSecureContext){
+    return navigator.clipboard.writeText(str).then(()=>show(true)).catch(()=>fallback());
+  }
+  return fallback();
+}
+
+// ============================================================
 // COMPANY OVERVIEW
 // ============================================================
 const POMBOMB_WHAT_WE_DO = '';
@@ -730,12 +768,7 @@ function renderWhatWeDo(){
   if(el)el.textContent=POMBOMB_WHAT_WE_DO;
 }
 
-function copyWhatWeDo(){
-  navigator.clipboard.writeText(POMBOMB_WHAT_WE_DO).then(()=>{
-    const msg=document.getElementById('what-we-do-copy-msg');
-    if(msg){msg.textContent='Copied ✓';setTimeout(()=>msg.textContent='',2500)}
-  }).catch(()=>{});
-}
+function copyWhatWeDo(){copyToClipboard(POMBOMB_WHAT_WE_DO,'what-we-do-copy-msg');}
 
 const POMBOMB_WHY_WE_STARTED = '';
 
@@ -752,12 +785,7 @@ function renderWhyWeStarted(){
   renderAboutParagraphs('why-we-started-text',POMBOMB_WHY_WE_STARTED);
 }
 
-function copyWhyWeStarted(){
-  navigator.clipboard.writeText(POMBOMB_WHY_WE_STARTED).then(()=>{
-    const msg=document.getElementById('why-we-started-copy-msg');
-    if(msg){msg.textContent='Copied ✓';setTimeout(()=>msg.textContent='',2500)}
-  }).catch(()=>{});
-}
+function copyWhyWeStarted(){copyToClipboard(POMBOMB_WHY_WE_STARTED,'why-we-started-copy-msg');}
 
 const POMBOMB_COMMUNITY_ISSUES = '';
 
@@ -765,12 +793,7 @@ function renderCommunityIssues(){
   renderAboutParagraphs('community-issues-text',POMBOMB_COMMUNITY_ISSUES);
 }
 
-function copyCommunityIssues(){
-  navigator.clipboard.writeText(POMBOMB_COMMUNITY_ISSUES).then(()=>{
-    const msg=document.getElementById('community-issues-copy-msg');
-    if(msg){msg.textContent='Copied ✓';setTimeout(()=>msg.textContent='',2500)}
-  }).catch(()=>{});
-}
+function copyCommunityIssues(){copyToClipboard(POMBOMB_COMMUNITY_ISSUES,'community-issues-copy-msg');}
 
 const POMBOMB_COMMUNITY_HELP_SHORT = '';
 
@@ -781,23 +804,13 @@ function renderCommunityHelpShort(){
   if(el)el.textContent=POMBOMB_COMMUNITY_HELP_SHORT;
 }
 
-function copyCommunityHelpShort(){
-  navigator.clipboard.writeText(POMBOMB_COMMUNITY_HELP_SHORT).then(()=>{
-    const msg=document.getElementById('community-help-short-copy-msg');
-    if(msg){msg.textContent='Copied ✓';setTimeout(()=>msg.textContent='',2500)}
-  }).catch(()=>{});
-}
+function copyCommunityHelpShort(){copyToClipboard(POMBOMB_COMMUNITY_HELP_SHORT,'community-help-short-copy-msg');}
 
 function renderCommunityHelpLong(){
   renderAboutParagraphs('community-help-long-text',POMBOMB_COMMUNITY_HELP_LONG);
 }
 
-function copyCommunityHelpLong(){
-  navigator.clipboard.writeText(POMBOMB_COMMUNITY_HELP_LONG).then(()=>{
-    const msg=document.getElementById('community-help-long-copy-msg');
-    if(msg){msg.textContent='Copied ✓';setTimeout(()=>msg.textContent='',2500)}
-  }).catch(()=>{});
-}
+function copyCommunityHelpLong(){copyToClipboard(POMBOMB_COMMUNITY_HELP_LONG,'community-help-long-copy-msg');}
 
 // ============================================================
 // COMMUNITY INVOLVEMENT — REFERENCE BULLETS (edit as needed)
@@ -845,12 +858,7 @@ function renderCommunityInvolvement(){
     renderCustomBulletTopics(bullets.custom_topics);
 }
 
-function copyCommunityInvolvement(){
-  navigator.clipboard.writeText(formatCommunityInvolvementCopy()).then(()=>{
-    const msg=document.getElementById('community-involvement-copy-msg');
-    if(msg){msg.textContent='Copied ✓';setTimeout(()=>msg.textContent='',2500)}
-  }).catch(()=>{});
-}
+function copyCommunityInvolvement(){copyToClipboard(formatCommunityInvolvementCopy(),'community-involvement-copy-msg');}
 
 const POMBOMB_CUSTOMER_HELP = '';
 
@@ -859,12 +867,7 @@ function renderCustomerHelp(){
   if(el)el.textContent=POMBOMB_CUSTOMER_HELP;
 }
 
-function copyCustomerHelp(){
-  navigator.clipboard.writeText(POMBOMB_CUSTOMER_HELP).then(()=>{
-    const msg=document.getElementById('customer-help-copy-msg');
-    if(msg){msg.textContent='Copied ✓';setTimeout(()=>msg.textContent='',2500)}
-  }).catch(()=>{});
-}
+function copyCustomerHelp(){copyToClipboard(POMBOMB_CUSTOMER_HELP,'customer-help-copy-msg');}
 
 const POMBOMB_MISSION = '';
 
@@ -873,12 +876,7 @@ function renderMission(){
   if(el)el.textContent=POMBOMB_MISSION;
 }
 
-function copyMission(){
-  navigator.clipboard.writeText(POMBOMB_MISSION).then(()=>{
-    const msg=document.getElementById('mission-copy-msg');
-    if(msg){msg.textContent='Copied ✓';setTimeout(()=>msg.textContent='',2500)}
-  }).catch(()=>{});
-}
+function copyMission(){copyToClipboard(POMBOMB_MISSION,'mission-copy-msg');}
 
 const POMBOMB_GRANT_IMPACT = '';
 
@@ -887,12 +885,7 @@ function renderGrantImpact(){
   if(el)el.textContent=POMBOMB_GRANT_IMPACT;
 }
 
-function copyGrantImpact(){
-  navigator.clipboard.writeText(POMBOMB_GRANT_IMPACT).then(()=>{
-    const msg=document.getElementById('grant-impact-copy-msg');
-    if(msg){msg.textContent='Copied ✓';setTimeout(()=>msg.textContent='',2500)}
-  }).catch(()=>{});
-}
+function copyGrantImpact(){copyToClipboard(POMBOMB_GRANT_IMPACT,'grant-impact-copy-msg');}
 
 const POMBOMB_GRANT_10K = '';
 
@@ -910,12 +903,7 @@ function renderGrant10k(){
   }
 }
 
-function copyGrant10k(){
-  navigator.clipboard.writeText(POMBOMB_GRANT_10K).then(()=>{
-    const msg=document.getElementById('grant-10k-copy-msg');
-    if(msg){msg.textContent='Copied ✓';setTimeout(()=>msg.textContent='',2500)}
-  }).catch(()=>{});
-}
+function copyGrant10k(){copyToClipboard(POMBOMB_GRANT_10K,'grant-10k-copy-msg');}
 
 const POMBOMB_CUSTOMERS = '';
 
@@ -924,12 +912,7 @@ function renderCustomers(){
   if(el)el.textContent=POMBOMB_CUSTOMERS;
 }
 
-function copyCustomers(){
-  navigator.clipboard.writeText(POMBOMB_CUSTOMERS).then(()=>{
-    const msg=document.getElementById('customers-copy-msg');
-    if(msg){msg.textContent='Copied ✓';setTimeout(()=>msg.textContent='',2500)}
-  }).catch(()=>{});
-}
+function copyCustomers(){copyToClipboard(POMBOMB_CUSTOMERS,'customers-copy-msg');}
 
 const POMBOMB_PROUD_MOMENT = '';
 
@@ -938,12 +921,7 @@ function renderProudMoment(){
   if(el)el.textContent=POMBOMB_PROUD_MOMENT;
 }
 
-function copyProudMoment(){
-  navigator.clipboard.writeText(POMBOMB_PROUD_MOMENT).then(()=>{
-    const msg=document.getElementById('proud-moment-copy-msg');
-    if(msg){msg.textContent='Copied ✓';setTimeout(()=>msg.textContent='',2500)}
-  }).catch(()=>{});
-}
+function copyProudMoment(){copyToClipboard(POMBOMB_PROUD_MOMENT,'proud-moment-copy-msg');}
 
 const POMBOMB_BIGGEST_OBSTACLE = '';
 
@@ -952,12 +930,7 @@ function renderBiggestObstacle(){
   if(el)el.textContent=POMBOMB_BIGGEST_OBSTACLE;
 }
 
-function copyBiggestObstacle(){
-  navigator.clipboard.writeText(POMBOMB_BIGGEST_OBSTACLE).then(()=>{
-    const msg=document.getElementById('biggest-obstacle-copy-msg');
-    if(msg){msg.textContent='Copied ✓';setTimeout(()=>msg.textContent='',2500)}
-  }).catch(()=>{});
-}
+function copyBiggestObstacle(){copyToClipboard(POMBOMB_BIGGEST_OBSTACLE,'biggest-obstacle-copy-msg');}
 
 const POMBOMB_2026_GOALS = '';
 
@@ -966,12 +939,7 @@ function render2026Goals(){
   if(el)el.textContent=POMBOMB_2026_GOALS;
 }
 
-function copy2026Goals(){
-  navigator.clipboard.writeText(POMBOMB_2026_GOALS).then(()=>{
-    const msg=document.getElementById('goals-2026-copy-msg');
-    if(msg){msg.textContent='Copied ✓';setTimeout(()=>msg.textContent='',2500)}
-  }).catch(()=>{});
-}
+function copy2026Goals(){copyToClipboard(POMBOMB_2026_GOALS,'goals-2026-copy-msg');}
 
 const POMBOMB_THOUGHTS_COMMENTS = '';
 
@@ -980,12 +948,7 @@ function renderThoughtsComments(){
   if(el)el.textContent=POMBOMB_THOUGHTS_COMMENTS;
 }
 
-function copyThoughtsComments(){
-  navigator.clipboard.writeText(POMBOMB_THOUGHTS_COMMENTS).then(()=>{
-    const msg=document.getElementById('thoughts-comments-copy-msg');
-    if(msg){msg.textContent='Copied ✓';setTimeout(()=>msg.textContent='',2500)}
-  }).catch(()=>{});
-}
+function copyThoughtsComments(){copyToClipboard(POMBOMB_THOUGHTS_COMMENTS,'thoughts-comments-copy-msg');}
 
 // ============================================================
 // APPLICATION PROFILE
@@ -1106,11 +1069,8 @@ function saveProfile(){
 
 function copyProfile(){
   const p=loadProfile();
-  const lines=PROFILE_FIELDS.map(f=>`${f.label}: ${p[f.key]||''}`).join('\n');
-  navigator.clipboard.writeText(lines).then(()=>{
-    const msg=document.getElementById('profile-save-msg');
-    if(msg){msg.textContent='Copied to clipboard ✓';setTimeout(()=>msg.textContent='',2500)}
-  }).catch(()=>{});
+  const lines=PROFILE_FIELDS.map(f=>`${f.label}: ${p[f.key]||''}`).join(String.fromCharCode(10));
+  copyToClipboard(lines,'profile-save-msg','Copied to clipboard ✓');
 }
 
 function renderProfileForm(){
@@ -1167,9 +1127,8 @@ const labelColorMap = {
   primary:{bg:'var(--primary-hl)',color:'var(--primary)'},
 };
 
-let done = JSON.parse(localStorage.getItem('sbcc_done') || '[]');
-// fallback to in-memory if storage blocked
-let doneMem = [...done];
+let doneMem=[];
+try{doneMem=JSON.parse(localStorage.getItem('sbcc_done')||'[]')}catch(e){}
 
 function isDone(id){return doneMem.includes(id)}
 function toggleDone(id){
@@ -1826,7 +1785,7 @@ function copyCustomNarrative(id,part){
   let text=item.body;
   if(part==='shortBody')text=item.shortBody;
   if(part==='longBody')text=item.longBody;
-  navigator.clipboard.writeText(text||'').catch(()=>{});
+  copyToClipboard(text||'','copy-'+id);
 }
 
 function submitAddModal(e){
